@@ -8,13 +8,21 @@
         font-size: 12pt;
         font-weight: 300;
         color: #333;
+        padding: 30px 20px;
+        margin: 0;
       }
       .linkcontainer {
-        margin: 300px 200px;
+        position: absolute;
+        top: 300px;
+        left: 200px;
+        width: 400px;
         background-color: #8d8;
         font-weight: bold;
         border-radius: 5px;
         padding: 25px;
+      }
+      .linkcontainer.second {
+        top: 500px;
       }
       .intheway {
         position: absolute;
@@ -31,13 +39,17 @@
     <script type="text/javascript" src="nonblock.js"></script>
   </head>
   <body>
+    <h1>NonBlock.js</h1>
+    <p>
+      Hover over the thing.
+    </p>
     <div class="linkcontainer">
       This is a <a href="http://google.com" target="_blank">link</a>.
     </div>
     <div class="nonblock-enabled intheway">
       There&apos;s a link under me. I am going to stay in the way of that link.
     </div>
-    <div class="linkcontainer">
+    <div class="linkcontainer second">
       This is a <a href="http://google.com" target="_blank">link</a>.
     </div>
   </body>
