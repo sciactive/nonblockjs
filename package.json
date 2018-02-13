@@ -1,0 +1,26 @@
+{
+  "name": "nonblockjs",
+  "version": "1.0.0",
+  "description": "Nonblocking UI elements in JavaScript.",
+  "keywords": [
+    "non blocking",
+    "nonblocking",
+    "unintrusive"
+  ],
+  "homepage": "https://github.com/sciactive/nonblockjs",
+  "bugs": {
+    "url": "https://github.com/sciactive/nonblockjs/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Hunter Perrin",
+  "files": [
+    "NonBlock.css",
+    "NonBlock.js"
+  ],
+  "main": "NonBlock.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sciactive/nonblockjs.git"
+  },
+  "dependencies": {}
+}

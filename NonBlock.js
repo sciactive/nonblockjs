@@ -173,15 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
       text = range.startContainer.textContent.replace(/[\s\n]+$/g, '');
     }
 
-    console.log('range:', range);
-    console.log('textNode:', textNode);
-    console.log('range.startContainer.textContent:', range.startContainer.textContent);
-    console.log('whitespaceBefore:', whitespaceBefore);
-    console.log('whitespaceBefore.length:', whitespaceBefore.length);
-    console.log('text:', text);
-    console.log('text.length:', text.length);
-    console.log('offset:', offset);
-
     elem.classList.remove('nonblock-hide');
     let cursorStyle = getCursor(elBelow);
     isOverTextNode = false;
@@ -226,28 +217,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remember the latest element the mouse was over.
     nonBlockLastElem = elBelow;
   };
-  /*
-  const els = document.getElementsByClassName('nonblock');
-  Array.prototype.forEach.call(els, (el) => {
-    el.addEventListener('mouseenter', (ev) => {
-      ev.target.style.opacity = '.2';
-    }, true);
-    el.addEventListener('mouseleave', (ev) => {
-      ev.target.style.opacity = '1';
-    }, true);
-  });
-  const doTheThing = () => {
-    const els = document.getElementsByClassName('nonblock');
-    Array.prototype.forEach.call(els, (el) => {
-      el.style.display = 'none';
-    });
-    window.requestAnimationFrame(() => {
-      Array.prototype.forEach.call(els, (el) => {
-        el.style.display = 'block';
-      });
-      setTimeout(doTheThing, 0);
-    });
-  }
-  setTimeout(doTheThing, 0);
-  */
 });
