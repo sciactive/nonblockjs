@@ -1,181 +1,253 @@
 /**
- * NonBlock.js.
+ * NonBlock.js
  *
- * Code style: http://standardjs.com/
- *
- * Copyright (c) 2017 Hunter Perrin
+ * Copyright (c) 2017-2018 Hunter Perrin
  *
  * @author Hunter Perrin <hperrin@gmail.com>
  */
 'use strict'
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   // This keeps track of the last element the mouse was over, so
   // mouseleave, mouseenter, etc can be called.
-  let nonblockLastElBelow
+  let nonBlockLastElem;
+  // These is used for selecting text under a nonblock element.
+  let isOverTextNode = false;
+  let isSelectingText = false;
   // Some useful regexes.
-  const re_on = /^on/
-  const re_mouse_events = /^(dbl)?click$|^mouse(move|down|up|over|out|enter|leave)$|^contextmenu$/
-  const re_ui_events = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/
-  const re_html_events = /^(scroll|resize|(un)?load|abort|error)$/
+  const regexOn = /^on/,
+        regexMouseEvents = /^(dbl)?click$|^mouse(move|down|up|over|out|enter|leave)$|^contextmenu$/,
+        regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/,
+        regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
 
-  function isNonBlocking (el) {
-    return el.classList.contains('nonblock-enabled')
+  function isNonBlocking(el) {
+    return el.classList.contains('nonblock');
   }
 
-  function getCursor (el) {
-    const style = window.getComputedStyle(el)
-    return style.getPropertyValue('cursor')
+  function getCursor(el) {
+    const style = window.getComputedStyle(el);
+    return style.getPropertyValue('cursor');
   }
 
-  function setCursor (el, value) {
-    remCursor(el)
-    el.classList.add('nonblock-cursor-' + value)
+  function setCursor(el, value) {
+    remCursor(el);
+    el.classList.add('nonblock-cursor-' + value);
   }
 
-  function remCursor (el) {
-    ;[...el.classList.values()].forEach((className) => {
+  function remCursor(el) {
+    [...el.classList.values()].forEach((className) => {
       if (className.indexOf('nonblock-cursor-') === 0) {
-        el.classList.remove(className)
+        el.classList.remove(className);
       }
-    })
+    });
   }
 
   document.body.addEventListener('mouseenter', (ev) => {
     if (isNonBlocking(ev.target)) {
-      nonblock_elem = ev.target
+      nonBlockLastElem = ev.target;
+      ev.stopPropagation();
     }
-  }, true)
+  }, true);
   document.body.addEventListener('mouseleave', (ev) => {
     if (isNonBlocking(ev.target)) {
-      remCursor(ev.target)
-      nonblockLastElBelow = null
+      remCursor(ev.target);
+      nonBlockLastElem = null;
+      isSelectingText = false;
+      ev.stopPropagation();
     }
-  }, true)
+  }, true);
   document.body.addEventListener('mouseover', (ev) => {
-  }, true)
+  }, true);
   document.body.addEventListener('mouseout', (ev) => {
-  }, true)
+  }, true);
   document.body.addEventListener('mousemove', (ev) => {
    if (isNonBlocking(ev.target)) {
-     nonblockPass(ev.target, ev, 'onmousemove')
+     nonblockPass(ev.target, ev, 'onmousemove');
+     // If the user just clicks somewhere, we don't want to select text, so this
+     // detects that the user moved their mouse.
+     if (isSelectingText === null) {
+       window.getSelection().removeAllRanges();
+       isSelectingText = true;
+     }
+     ev.stopPropagation();
    }
-  }, true)
+ }, true);
   document.body.addEventListener('mousedown', (ev) => {
     if (isNonBlocking(ev.target)) {
-      ev.preventDefault()
-      nonblockPass(ev.target, ev, 'onmousedown')
+      ev.preventDefault();
+      nonblockPass(ev.target, ev, 'onmousedown');
+      isSelectingText = null;
+      ev.stopPropagation();
     }
-  }, true)
+  }, true);
   document.body.addEventListener('mouseup', (ev) => {
     if (isNonBlocking(ev.target)) {
-      ev.preventDefault()
-      nonblockPass(ev.target, ev, 'onmouseup')
+      ev.preventDefault();
+      nonblockPass(ev.target, ev, 'onmouseup');
+      if (isSelectingText === null) {
+        window.getSelection().removeAllRanges();
+      }
+      isSelectingText = false;
+      ev.stopPropagation();
     }
-  }, true)
+  }, true);
   document.body.addEventListener('click', (ev) => {
     if (isNonBlocking(ev.target)) {
-      nonblockPass(ev.target, ev, 'onclick')
+      nonblockPass(ev.target, ev, 'onclick');
+      ev.stopPropagation();
     }
-  }, true)
+  }, true);
   document.body.addEventListener('dblclick', (ev) => {
     if (isNonBlocking(ev.target)) {
-      nonblockPass(ev.target, ev, 'ondblclick')
+      nonblockPass(ev.target, ev, 'ondblclick');
+      ev.stopPropagation();
     }
-  }, true)
+  }, true);
 
   // Fire a DOM event.
-  const domEvent = (el, evName, ev) => {
-    let eventObject
-    evName = evName.toLowerCase()
-    if (document.createEvent && el.dispatchEvent) {
+  const domEvent = (elem, event, origEvent) => {
+    let eventObject;
+    event = event.toLowerCase();
+    if (document.createEvent && elem.dispatchEvent) {
       // FireFox, Opera, Safari, Chrome
-      evName = evName.replace(re_on, '')
-      if (evName.match(re_mouse_events)) {
-        // This allows the click event to fire on the el. There is
+      event = event.replace(regexOn, '');
+      if (event.match(regexMouseEvents)) {
+        // This allows the click event to fire on the notice. There is
         // probably a much better way to do it.
-        el.getBoundingClientRect()
-        eventObject = document.createEvent('MouseEvents')
-        eventObject.initMouseEvent(evName, ev.bubbles, ev.cancelable,
-            ev.view, ev.detail, ev.screenX, ev.screenY, ev.clientX,
-            ev.clientY, ev.ctrlKey, ev.altKey, ev.shiftKey, ev.metaKey,
-            ev.button, ev.relatedTarget)
-      } else if (evName.match(re_ui_events)) {
-        eventObject = document.createEvent('UIEvents')
-        eventObject.initUIEvent(evName, ev.bubbles, ev.cancelable,
-            ev.view, ev.detail)
-      } else if (evName.match(re_html_events)) {
-        eventObject = document.createEvent('HTMLEvents')
-        eventObject.initEvent(evName, ev.bubbles, ev.cancelable)
+        elem.getBoundingClientRect();
+        eventObject = document.createEvent("MouseEvents");
+        eventObject.initMouseEvent(
+          event,
+          origEvent.bubbles,
+          origEvent.cancelable,
+          origEvent.view,
+          origEvent.detail,
+          origEvent.screenX,
+          origEvent.screenY,
+          origEvent.clientX,
+          origEvent.clientY,
+          origEvent.ctrlKey,
+          origEvent.altKey,
+          origEvent.shiftKey,
+          origEvent.metaKey,
+          origEvent.button,
+          origEvent.relatedTarget
+        );
+      } else if (event.match(regexUiEvents)) {
+        eventObject = document.createEvent("UIEvents");
+        eventObject.initUIEvent(event, origEvent.bubbles, origEvent.cancelable, origEvent.view, origEvent.detail);
+      } else if (event.match(regexHtmlEvents)) {
+        eventObject = document.createEvent("HTMLEvents");
+        eventObject.initEvent(event, origEvent.bubbles, origEvent.cancelable);
       }
-      if (!eventObject) return
-      el.dispatchEvent(eventObject)
+      if (!eventObject) {
+        return
+      };
+      elem.dispatchEvent(eventObject);
     } else {
       // Internet Explorer
-      if (!evName.match(re_on)) evName = 'on' + evName
-      eventObject = document.createEventObject(ev)
-      el.fireEvent(evName, eventObject)
+      if (!event.match(regexOn)) {
+        event = "on"+event
+      };
+      eventObject = document.createEventObject(origEvent);
+      elem.fireEvent(event, eventObject);
     }
-  }
+  };
 
   // This is used to pass events through the el if it is non-blocking.
-  const nonblockPass = (el, ev, evName) => {
-    el.classList.add('nonblock-hide')
-    const elBelow = document.elementFromPoint(ev.clientX, ev.clientY)
-    let range, textNode, offset
+  const nonblockPass = (elem, event, eventName) => {
+    elem.classList.add('nonblock-hide');
+    const elBelow = document.elementFromPoint(event.clientX, event.clientY);
+    let range, textNode, whitespaceBefore, text, offset;
     if (document.caretPositionFromPoint) {
-      range = document.caretPositionFromPoint(ev.clientX, ev.clientY)
-      textNode = range.offsetNode
-      offset = range.offset
+      range = document.caretPositionFromPoint(event.clientX, event.clientY);
+      textNode = range.offsetNode;
+      offset = range.offset;
     } else if (document.caretRangeFromPoint) {
-      range = document.caretRangeFromPoint(ev.clientX, ev.clientY)
-      textNode = range.startContainer
-      offset = range.startOffset
+      range = document.caretRangeFromPoint(event.clientX, event.clientY);
+      textNode = range.startContainer;
+      offset = range.startOffset;
     }
-    console.log('range:', range)
-    console.log('textNode:', textNode)
-    console.log('offset:', offset)
-    el.classList.remove('nonblock-hide')
-    let cursorStyle = getCursor(elBelow)
+    if (range) {
+      whitespaceBefore = range.startContainer.textContent.match(/^[\s\n]*/)[0];
+      text = range.startContainer.textContent.replace(/[\s\n]+$/g, '');
+    }
+
+    console.log('range:', range);
+    console.log('textNode:', textNode);
+    console.log('range.startContainer.textContent:', range.startContainer.textContent);
+    console.log('whitespaceBefore:', whitespaceBefore);
+    console.log('whitespaceBefore.length:', whitespaceBefore.length);
+    console.log('text:', text);
+    console.log('text.length:', text.length);
+    console.log('offset:', offset);
+
+    elem.classList.remove('nonblock-hide');
+    let cursorStyle = getCursor(elBelow);
+    isOverTextNode = false;
     if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
-      cursorStyle = 'pointer'
-    }
-    setCursor(el, cursorStyle !== 'auto' ? cursorStyle : 'default')
-    // If the element changed, call mouseenter, mouseleave, etc.
-    if (!nonblockLastElBelow || nonblockLastElBelow !== elBelow) {
-      if (nonblockLastElBelow) {
-        domEvent(nonblockLastElBelow, 'mouseleave', ev)
-        domEvent(nonblockLastElBelow, 'mouseout', ev)
+      cursorStyle = 'pointer';
+    } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
+      if (cursorStyle === 'auto') {
+        cursorStyle = 'text';
       }
-      domEvent(elBelow, 'mouseenter', ev)
-      domEvent(elBelow, 'mouseover', ev)
+      isOverTextNode = true;
     }
-    domEvent(elBelow, evName, ev)
+
+    if (range && isSelectingText && offset > 0) {
+      const selection = window.getSelection();
+      let selectionRange, addRange = false;
+      if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
+        selectionRange = document.createRange();
+        selectionRange.setStart(range.startContainer, offset - 1);
+        addRange = true;
+      } else {
+        selectionRange = selection.getRangeAt(0);
+      }
+
+      selectionRange.setEnd(range.endContainer, offset);
+      if (addRange) {
+        window.getSelection().addRange(selectionRange);
+      }
+    }
+
+    setCursor(elem, cursorStyle !== 'auto' ? cursorStyle : 'default');
+    // If the element changed, call mouseenter, mouseleave, etc.
+    if (!nonBlockLastElem || nonBlockLastElem !== elBelow) {
+      if (nonBlockLastElem) {
+        const lastElem = nonBlockLastElem;
+        domEvent(lastElem, 'mouseleave', event);
+        domEvent(lastElem, 'mouseout', event);
+      }
+      domEvent(elBelow, 'mouseenter', event);
+      domEvent(elBelow, 'mouseover', event);
+    }
+    domEvent(elBelow, eventName, event);
     // Remember the latest element the mouse was over.
-    nonblockLastElBelow = elBelow
-  }
+    nonBlockLastElem = elBelow;
+  };
   /*
-  const els = document.getElementsByClassName('nonblock-enabled')
+  const els = document.getElementsByClassName('nonblock');
   Array.prototype.forEach.call(els, (el) => {
     el.addEventListener('mouseenter', (ev) => {
-      ev.target.style.opacity = '.2'
-    }, true)
+      ev.target.style.opacity = '.2';
+    }, true);
     el.addEventListener('mouseleave', (ev) => {
-      ev.target.style.opacity = '1'
-    }, true)
-  })
+      ev.target.style.opacity = '1';
+    }, true);
+  });
   const doTheThing = () => {
-    const els = document.getElementsByClassName('nonblock-enabled')
+    const els = document.getElementsByClassName('nonblock');
     Array.prototype.forEach.call(els, (el) => {
-      el.style.display = 'none'
-    })
+      el.style.display = 'none';
+    });
     window.requestAnimationFrame(() => {
       Array.prototype.forEach.call(els, (el) => {
-        el.style.display = 'block'
-      })
-      setTimeout(doTheThing, 0)
-    })
+        el.style.display = 'block';
+      });
+      setTimeout(doTheThing, 0);
+    });
   }
-  setTimeout(doTheThing, 0)
+  setTimeout(doTheThing, 0);
   */
-})
+});

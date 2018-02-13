@@ -6,37 +6,44 @@
       body {
         font-family: Arial;
         font-size: 12pt;
-        font-weight: 300;
         color: #333;
-        padding: 30px 20px;
-        margin: 0;
+        padding: 0;
+        margin: 30px 20px;
       }
       .linkcontainer {
         position: absolute;
-        top: 300px;
-        left: 200px;
+        top: 200px;
+        left: 50px;
         width: 400px;
         background-color: #8d8;
-        font-weight: bold;
         border-radius: 5px;
         padding: 25px;
-      }
-      .linkcontainer.second {
-        top: 500px;
+        margin-bottom: 30px;
       }
       .intheway {
         position: absolute;
-        top: 280px;
-        left: 230px;
-        height: 120px;
+        top: 180px;
+        left: 50px;
+        height: 100px;
         width: 120px;
         background-color: #ccf;
         border-radius: 5px;
         padding: 12px;
       }
+      .linkcontainer.second {
+        top: 400px;
+      }
+      .intheway.second {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: auto;
+        width: auto;
+      }
     </style>
-    <link rel="stylesheet" type="text/css" href="nonblock.css" />
-    <script type="text/javascript" src="nonblock.js"></script>
+    <link rel="stylesheet" type="text/css" href="NonBlock.css" />
+    <script type="text/javascript" src="NonBlock.js"></script>
   </head>
   <body>
     <h1>NonBlock.js</h1>
@@ -44,13 +51,16 @@
       Hover over the thing.
     </p>
     <div class="linkcontainer">
-      This is a <a href="http://google.com" target="_blank">link</a>.
+      This is a <a href="http://google.com" target="_blank">link</a>. Here is some text. Let's have more text. All the text in the world couldn't save you now, Mr. Bond. Ah, but that's where you're wrong. You see, my underpants have been equipped with several tiny lasers that will blind you while the speaker up my butt blasts disco music.
     </div>
-    <div class="nonblock-enabled intheway">
+    <div class="nonblock intheway">
       There&apos;s a link under me. I am going to stay in the way of that link.
     </div>
     <div class="linkcontainer second">
-      This is a <a href="http://google.com" target="_blank">link</a>.
+      This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
+      <div class="nonblock intheway second">
+        There&apos;s a button under me. I am going to stay in the way of that button.
+      </div>
     </div>
   </body>
 </html>

@@ -5,8 +5,8 @@
  *
  * @author Hunter Perrin <hperrin@gmail.com>
  */
-.nonblock-enabled { transition: opacity .3s ease; }
-.nonblock-enabled:hover { opacity: .2; }
+.nonblock { transition: opacity .3s ease; }
+.nonblock:hover { opacity: .2; }
 .nonblock-hide { display: none !important; }
 .nonblock-cursor-auto { cursor: auto; }
 .nonblock-cursor-default { cursor: default; }
