@@ -5,7 +5,7 @@
   "keywords": [
     "non blocking",
     "nonblocking",
-    "unintrusive"
+    "unobtrusive"
   ],
   "homepage": "https://github.com/sciactive/nonblockjs",
   "bugs": {
