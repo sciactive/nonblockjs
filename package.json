@@ -5,6 +5,8 @@
   "keywords": [
     "non blocking",
     "nonblocking",
+    "nonblock",
+    "ui",
     "unobtrusive"
   ],
   "homepage": "https://github.com/sciactive/nonblockjs",
