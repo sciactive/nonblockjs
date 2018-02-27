@@ -20,9 +20,21 @@
     "NonBlock.js"
   ],
   "main": "NonBlock.js",
+  "scripts": {
+    "build": "babel -o NonBlock.es5.js NonBlock.js",
+    "watch": "babel --watch -o NonBlock.es5.js NonBlock.js",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/sciactive/nonblockjs.git"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-iife-wrap": "^1.1.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-3": "^6.24.1"
+  }
 }

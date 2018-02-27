@@ -5,9 +5,15 @@
  *
  * @author Hunter Perrin <hperrin@gmail.com>
  */
-'use strict'
+'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+((init) => {
+  if (document.body) {
+    init();
+  } else {
+    document.addEventListener('DOMContentLoaded', init);
+  }
+})(() => {
   // This keeps track of the last element the mouse was over, so
   // mouseleave, mouseenter, etc can be called.
   let nonBlockLastElem;
@@ -55,10 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
       isSelectingText = false;
       ev.stopPropagation();
     }
-  }, true);
-  document.body.addEventListener('mouseover', (ev) => {
-  }, true);
-  document.body.addEventListener('mouseout', (ev) => {
   }, true);
   document.body.addEventListener('mousemove', (ev) => {
    if (isNonBlocking(ev.target)) {

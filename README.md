@@ -1,6 +1,8 @@
 # NonBlock.js
 
-Nonblocking UI elements in JavaScript.
+Non-blocking UI elements in JavaScript.
+
+NonBlock.js lets you provide uninstrusive UI elements. They will fade when a user hovers over them, and let the user select and interact with elements under them.
 
 ## Installation
 

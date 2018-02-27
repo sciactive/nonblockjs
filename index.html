@@ -11,50 +11,55 @@
         margin: 30px 20px;
       }
       .linkcontainer {
-        position: absolute;
-        top: 200px;
-        left: 50px;
+        position: relative;
         width: 400px;
         background-color: #8d8;
         border-radius: 5px;
         padding: 25px;
-        margin-bottom: 30px;
+        margin: 30px 0;
       }
       .intheway {
-        position: absolute;
-        top: 180px;
-        left: 50px;
-        height: 100px;
-        width: 120px;
-        background-color: #ccf;
+        background-color: #6400B3;
+        color: #FFF;
         border-radius: 5px;
         padding: 12px;
+        box-shadow: 0px 2px 30px 5px rgba(0,0,0,0.1);
       }
-      .linkcontainer.second {
-        top: 400px;
+      .intheway.first {
+        position: relative;
+        top: -180px;
+        left: 30px;
+        height: 100px;
+        width: 120px;
       }
       .intheway.second {
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 4px;
+        right: 4px;
         height: auto;
         width: auto;
       }
     </style>
     <link rel="stylesheet" type="text/css" href="NonBlock.css" />
-    <script type="text/javascript" src="NonBlock.js"></script>
+    <script type="text/javascript" src="NonBlock.es5.js"></script>
   </head>
   <body>
     <h1>NonBlock.js</h1>
     <p>
-      Hover over the thing.
+      NonBlock.js lets you provide uninstrusive UI elements. They will fade when a user hovers over them, and let the user select and interact with elements under them. Hover over the purple boxes to try it out.
     </p>
-    <div class="linkcontainer">
+    <div class="linkcontainer first">
       This is a <a href="http://google.com" target="_blank">link</a>. Here is some text. Let's have more text. All the text in the world couldn't save you now, Mr. Bond. Ah, but that's where you're wrong. You see, my underpants have been equipped with several tiny lasers that will blind you while the speaker up my butt blasts disco music.
     </div>
-    <div class="nonblock intheway">
+    <div class="nonblock intheway first">
       There&apos;s a link under me. I am going to stay in the way of that link.
+    </div>
+    <div>
+      Try toggling non-blocking on this demo:
+      <button onclick="document.querySelector('.intheway.second').classList.add('nonblock')">Enable Non-Block</button>
+      <button onclick="document.querySelector('.intheway.second').classList.remove('nonblock')">Disable Non-Block</button>
     </div>
     <div class="linkcontainer second">
       This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
