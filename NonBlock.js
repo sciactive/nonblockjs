@@ -80,6 +80,10 @@
     return el.classList.contains('nonblock');
   }
 
+  function isNotPropagating(el) {
+    return el.classList.contains('nonblock-stoppropagation');
+  }
+
   function getCursor(el) {
     const style = window.getComputedStyle(el);
     return style.getPropertyValue('cursor');
@@ -101,7 +105,9 @@
   document.body.addEventListener('mouseenter', (ev) => {
     if (isNonBlocking(ev.target)) {
       nonBlockLastElem = ev.target;
-      ev.stopPropagation();
+      if (isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
     }
   }, true);
   document.body.addEventListener('mouseleave', (ev) => {
@@ -109,6 +115,18 @@
       remCursor(ev.target);
       nonBlockLastElem = null;
       isSelectingText = false;
+      if (isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
+    }
+  }, true);
+  document.body.addEventListener('mouseover', (ev) => {
+    if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+      ev.stopPropagation();
+    }
+  }, true);
+  document.body.addEventListener('mouseout', (ev) => {
+    if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
       ev.stopPropagation();
     }
   }, true);
@@ -121,7 +139,9 @@
        window.getSelection().removeAllRanges();
        isSelectingText = true;
      }
-     ev.stopPropagation();
+     if (isNotPropagating(ev.target)) {
+       ev.stopPropagation();
+     }
    }
  }, true);
   document.body.addEventListener('mousedown', (ev) => {
@@ -129,7 +149,9 @@
       ev.preventDefault();
       nonblockPass(ev.target, ev, 'onmousedown');
       isSelectingText = null;
-      ev.stopPropagation();
+      if (isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
     }
   }, true);
   document.body.addEventListener('mouseup', (ev) => {
@@ -140,24 +162,30 @@
         window.getSelection().removeAllRanges();
       }
       isSelectingText = false;
-      ev.stopPropagation();
+      if (isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
     }
   }, true);
   document.body.addEventListener('click', (ev) => {
     if (isNonBlocking(ev.target)) {
       nonblockPass(ev.target, ev, 'onclick');
-      ev.stopPropagation();
+      if (isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
     }
   }, true);
   document.body.addEventListener('dblclick', (ev) => {
     if (isNonBlocking(ev.target)) {
       nonblockPass(ev.target, ev, 'ondblclick');
-      ev.stopPropagation();
+      if (isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
     }
   }, true);
 
   // Fire a DOM event.
-  const domEvent = (elem, event, origEvent) => {
+  const domEvent = (elem, event, origEvent, bubbles) => {
     let eventObject;
     event = event.toLowerCase();
     if (document.createEvent && elem.dispatchEvent) {
@@ -170,7 +198,7 @@
         eventObject = document.createEvent("MouseEvents");
         eventObject.initMouseEvent(
           event,
-          origEvent.bubbles,
+          bubbles === undefined ? origEvent.bubbles : bubbles,
           origEvent.cancelable,
           origEvent.view,
           origEvent.detail,
@@ -187,10 +215,10 @@
         );
       } else if (event.match(regexUiEvents)) {
         eventObject = document.createEvent("UIEvents");
-        eventObject.initUIEvent(event, origEvent.bubbles, origEvent.cancelable, origEvent.view, origEvent.detail);
+        eventObject.initUIEvent(event, bubbles === undefined ? origEvent.bubbles : bubbles, origEvent.cancelable, origEvent.view, origEvent.detail);
       } else if (event.match(regexHtmlEvents)) {
         eventObject = document.createEvent("HTMLEvents");
-        eventObject.initEvent(event, origEvent.bubbles, origEvent.cancelable);
+        eventObject.initEvent(event, bubbles === undefined ? origEvent.bubbles : bubbles, origEvent.cancelable);
       }
       if (!eventObject) {
         return
@@ -259,11 +287,17 @@
     if (!nonBlockLastElem || nonBlockLastElem !== elBelow) {
       if (nonBlockLastElem) {
         const lastElem = nonBlockLastElem;
-        domEvent(lastElem, 'mouseleave', event);
-        domEvent(lastElem, 'mouseout', event);
+        if (!lastElem.contains(elBelow)) {
+          domEvent(lastElem, 'mouseleave', event, false);
+        }
+        domEvent(lastElem, 'mouseout', event, true);
+        if (!elBelow.contains(lastElem)) {
+          domEvent(elBelow, 'mouseenter', event, false);
+        }
+      } else if (!elBelow.contains(elem)) {
+        domEvent(elBelow, 'mouseenter', event, false);
       }
-      domEvent(elBelow, 'mouseenter', event);
-      domEvent(elBelow, 'mouseover', event);
+      domEvent(elBelow, 'mouseover', event, true);
     }
     domEvent(elBelow, eventName, event);
     // Remember the latest element the mouse was over.

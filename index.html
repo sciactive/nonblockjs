@@ -26,13 +26,13 @@
       box-shadow: 0px 2px 30px 5px rgba(0,0,0,0.3);
     }
     .intheway.first {
-      position: relative;
-      top: -180px;
+      position: absolute;
+      top: 5px;
       left: 30px;
       height: 100px;
       width: 120px;
     }
-    .intheway.second {
+    .intheway.second, .intheway.third, .intheway.fourth {
       position: absolute;
       top: 4px;
       bottom: 4px;
@@ -51,16 +51,20 @@
     user hovers over them, and let the user select and interact with elements
     under them. Hover over the purple boxes to try it out.
   </p>
-  <div class="linkcontainer first">
-    This is a <a href="http://google.com" target="_blank">link</a>. Here is some
-    text. Let's have more text. All the text in the world couldn't save you now,
-    Mr. Bond. Ah, but that's where you're wrong. You see, my underpants have
-    been equipped with several tiny lasers that will blind you while the speaker
-    up my butt blasts disco music.
+  <hr />
+  <div style="position: relative;">
+    <div class="linkcontainer first">
+      This is a <a href="http://google.com" target="_blank">link</a>. Here is
+      some text. Let's have more text. All the text in the world couldn't save
+      you now, Mr. Bond. Ah, but that's where you're wrong. You see, my
+      overalls have been equipped with several tiny lasers that will blind you
+      while the speaker in my straw hat blasts disco music.
+    </div>
+    <div class="nonblock intheway first">
+      There&apos;s a link under me. I am going to stay in the way of that link.
+    </div>
   </div>
-  <div class="nonblock intheway first">
-    There&apos;s a link under me. I am going to stay in the way of that link.
-  </div>
+  <hr />
   <div>
     Try toggling nonblocking on this demo:
     <button onclick="document.querySelector('.intheway.second').classList.add('nonblock')">Enable NonBlock</button>
@@ -73,5 +77,52 @@
       button.
     </div>
   </div>
+  <hr />
+  <div>
+    These demos show how event propagation works. The green box is listening for
+    events and the purple box is a child.
+  </div>
+  <h4>
+    class="nonblock"
+  </h4>
+  <div class="linkcontainer third">
+    This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
+    <div class="nonblock intheway third">
+      There&apos;s a button under me. I am going to stay in the way of that
+      button.
+    </div>
+  </div>
+  <div style="display: inline-block; font-family: monospace; width: auto;">
+    Event log:
+    <div id="event-third" style="max-height: 250px; overflow: auto;"></div>
+  </div>
+  <h4>
+    class="nonblock nonblock-stoppropagation"
+  </h4>
+  <div class="linkcontainer fourth">
+    This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
+    <div class="nonblock nonblock-stoppropagation intheway fourth">
+      There&apos;s a button under me. I am going to stay in the way of that
+      button.
+    </div>
+  </div>
+  <div style="display: inline-block; font-family: monospace; width: auto;">
+    Event log:
+    <div id="event-fourth" style="max-height: 250px; overflow: auto;"></div>
+  </div>
+  <script type="text/javascript">
+    function listenerDemo(demo, eventType) {
+      document.querySelector('.linkcontainer.'+demo).addEventListener(eventType, function(event){
+        var output = document.getElementById('event-'+demo);
+        output.innerHTML += '<br />'+eventType+'<br />Target: '+event.target.tagName+' class="'+event.target.className+'"<br />';
+        output.scrollTop = output.scrollHeight;
+      });
+    }
+    var events = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'click', 'dblclick'];
+    for (var i in events) {
+      listenerDemo('third', events[i]);
+      listenerDemo('fourth', events[i]);
+    }
+  </script>
 </body>
 </html>

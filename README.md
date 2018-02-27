@@ -26,6 +26,8 @@ npm install --save nonblockjs
 
 Add the class `nonblock` to any element you want to make nonblocking.
 
+Add the class `nonblock-stoppropagation` if you want NonBlock.js to stop event propagation for mouse events, effectively disguising it from its ancestors.
+
 ## Demos
 
 https://sciactive.github.io/nonblockjs/
