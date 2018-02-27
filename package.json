@@ -1,13 +1,14 @@
 {
   "name": "nonblockjs",
   "version": "1.0.3",
-  "description": "Nonblocking UI elements in JavaScript.",
+  "description": "Unobtrusive (click through) UI elements in JavaScript.",
   "keywords": [
     "non blocking",
     "nonblocking",
     "nonblock",
     "ui",
-    "unobtrusive"
+    "unobtrusive",
+    "click through"
   ],
   "homepage": "https://github.com/sciactive/nonblockjs",
   "bugs": {
@@ -16,7 +17,6 @@
   "license": "Apache-2.0",
   "author": "Hunter Perrin",
   "files": [
-    "NonBlock.css",
     "NonBlock.es5.js",
     "NonBlock.js"
   ],

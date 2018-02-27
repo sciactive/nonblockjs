@@ -14,6 +14,56 @@
     document.addEventListener('DOMContentLoaded', init);
   }
 })(() => {
+  const styling = document.createElement('style');
+  styling.setAttribute('type', 'text/css');
+  const css = `
+  .nonblock{transition:opacity .3s ease;}
+  .nonblock:hover{opacity:.1 !important;}
+  .nonblock-hide{display:none !important;}
+  .nonblock-cursor-auto{cursor:auto;}
+  .nonblock-cursor-default{cursor:default;}
+  .nonblock-cursor-none{cursor:none;}
+  .nonblock-cursor-context-menu{cursor:context-menu;}
+  .nonblock-cursor-help{cursor:help;}
+  .nonblock-cursor-pointer{cursor:pointer;}
+  .nonblock-cursor-progress{cursor:progress;}
+  .nonblock-cursor-wait{cursor:wait;}
+  .nonblock-cursor-cell{cursor:cell;}
+  .nonblock-cursor-crosshair{cursor:crosshair;}
+  .nonblock-cursor-text{cursor:text;}
+  .nonblock-cursor-vertical-text{cursor:vertical-text;}
+  .nonblock-cursor-alias{cursor:alias;}
+  .nonblock-cursor-copy{cursor:copy;}
+  .nonblock-cursor-move{cursor:move;}
+  .nonblock-cursor-no-drop{cursor:no-drop;}
+  .nonblock-cursor-not-allowed{cursor:not-allowed;}
+  .nonblock-cursor-all-scroll{cursor:all-scroll;}
+  .nonblock-cursor-col-resize{cursor:col-resize;}
+  .nonblock-cursor-row-resize{cursor:row-resize;}
+  .nonblock-cursor-n-resize{cursor:n-resize;}
+  .nonblock-cursor-e-resize{cursor:e-resize;}
+  .nonblock-cursor-s-resize{cursor:s-resize;}
+  .nonblock-cursor-w-resize{cursor:w-resize;}
+  .nonblock-cursor-ne-resize{cursor:ne-resize;}
+  .nonblock-cursor-nw-resize{cursor:nw-resize;}
+  .nonblock-cursor-se-resize{cursor:se-resize;}
+  .nonblock-cursor-sw-resize{cursor:sw-resize;}
+  .nonblock-cursor-ew-resize{cursor:ew-resize;}
+  .nonblock-cursor-ns-resize{cursor:ns-resize;}
+  .nonblock-cursor-nesw-resize{cursor:nesw-resize;}
+  .nonblock-cursor-nwse-resize{cursor:nwse-resize;}
+  .nonblock-cursor-zoom-in{cursor:zoom-in;}
+  .nonblock-cursor-zoom-out{cursor:zoom-out;}
+  .nonblock-cursor-grab{cursor:grab;}
+  .nonblock-cursor-grabbing{cursor:grabbing;}
+  `;
+  if (styling.styleSheet) {
+    styling.styleSheet.cssText = css; // IE
+  } else {
+    styling.appendChild(document.createTextNode(css));
+  }
+  document.getElementsByTagName('head')[0].appendChild(styling);
+
   // This keeps track of the last element the mouse was over, so
   // mouseleave, mouseenter, etc can be called.
   let nonBlockLastElem;
@@ -156,7 +206,7 @@
     }
   };
 
-  // This is used to pass events through the el if it is non-blocking.
+  // This is used to pass events through the el if it is nonblocking.
   const nonblockPass = (elem, event, eventName) => {
     elem.classList.add('nonblock-hide');
     const elBelow = document.elementFromPoint(event.clientX, event.clientY);

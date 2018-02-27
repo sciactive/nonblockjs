@@ -29,6 +29,16 @@
       document.addEventListener('DOMContentLoaded', init);
     }
   })(function () {
+    var styling = document.createElement('style');
+    styling.setAttribute('type', 'text/css');
+    var css = '\n  .nonblock{transition:opacity .3s ease;}\n  .nonblock:hover{opacity:.1 !important;}\n  .nonblock-hide{display:none !important;}\n  .nonblock-cursor-auto{cursor:auto;}\n  .nonblock-cursor-default{cursor:default;}\n  .nonblock-cursor-none{cursor:none;}\n  .nonblock-cursor-context-menu{cursor:context-menu;}\n  .nonblock-cursor-help{cursor:help;}\n  .nonblock-cursor-pointer{cursor:pointer;}\n  .nonblock-cursor-progress{cursor:progress;}\n  .nonblock-cursor-wait{cursor:wait;}\n  .nonblock-cursor-cell{cursor:cell;}\n  .nonblock-cursor-crosshair{cursor:crosshair;}\n  .nonblock-cursor-text{cursor:text;}\n  .nonblock-cursor-vertical-text{cursor:vertical-text;}\n  .nonblock-cursor-alias{cursor:alias;}\n  .nonblock-cursor-copy{cursor:copy;}\n  .nonblock-cursor-move{cursor:move;}\n  .nonblock-cursor-no-drop{cursor:no-drop;}\n  .nonblock-cursor-not-allowed{cursor:not-allowed;}\n  .nonblock-cursor-all-scroll{cursor:all-scroll;}\n  .nonblock-cursor-col-resize{cursor:col-resize;}\n  .nonblock-cursor-row-resize{cursor:row-resize;}\n  .nonblock-cursor-n-resize{cursor:n-resize;}\n  .nonblock-cursor-e-resize{cursor:e-resize;}\n  .nonblock-cursor-s-resize{cursor:s-resize;}\n  .nonblock-cursor-w-resize{cursor:w-resize;}\n  .nonblock-cursor-ne-resize{cursor:ne-resize;}\n  .nonblock-cursor-nw-resize{cursor:nw-resize;}\n  .nonblock-cursor-se-resize{cursor:se-resize;}\n  .nonblock-cursor-sw-resize{cursor:sw-resize;}\n  .nonblock-cursor-ew-resize{cursor:ew-resize;}\n  .nonblock-cursor-ns-resize{cursor:ns-resize;}\n  .nonblock-cursor-nesw-resize{cursor:nesw-resize;}\n  .nonblock-cursor-nwse-resize{cursor:nwse-resize;}\n  .nonblock-cursor-zoom-in{cursor:zoom-in;}\n  .nonblock-cursor-zoom-out{cursor:zoom-out;}\n  .nonblock-cursor-grab{cursor:grab;}\n  .nonblock-cursor-grabbing{cursor:grabbing;}\n  ';
+    if (styling.styleSheet) {
+      styling.styleSheet.cssText = css; // IE
+    } else {
+      styling.appendChild(document.createTextNode(css));
+    }
+    document.getElementsByTagName('head')[0].appendChild(styling);
+
     // This keeps track of the last element the mouse was over, so
     // mouseleave, mouseenter, etc can be called.
     var nonBlockLastElem = void 0;
@@ -155,7 +165,7 @@
       }
     };
 
-    // This is used to pass events through the el if it is non-blocking.
+    // This is used to pass events through the el if it is nonblocking.
     var nonblockPass = function nonblockPass(elem, event, eventName) {
       elem.classList.add('nonblock-hide');
       var elBelow = document.elementFromPoint(event.clientX, event.clientY);
