@@ -1,6 +1,6 @@
 {
   "name": "nonblockjs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Nonblocking UI elements in JavaScript.",
   "keywords": [
     "non blocking",
@@ -17,6 +17,7 @@
   "author": "Hunter Perrin",
   "files": [
     "NonBlock.css",
+    "NonBlock.es5.js",
     "NonBlock.js"
   ],
   "main": "NonBlock.js",

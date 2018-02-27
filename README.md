@@ -13,15 +13,15 @@ npm install --save nonblockjs
 ```
 
 ```html
-<script type="text/javascript" src="node_modules/nonblockjs/NonBlock.js"></script>
-<link type="text/css" rel="stylesheet" href="node_modules/nonblockjs/NonBlock.css" />
+<script src="node_modules/nonblockjs/NonBlock.es5.js" type="text/javascript"></script>
+<link href="node_modules/nonblockjs/NonBlock.css" type="text/css" rel="stylesheet" />
 ```
 
 ### Or use jsDelivr:
 
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.js"></script>
-<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.css" />
+<script src="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.es5.js" type="text/javascript"></script>
+<link href="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.css" type="text/css" rel="stylesheet" />
 ```
 
 ## Usage
