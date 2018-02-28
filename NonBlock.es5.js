@@ -95,6 +95,16 @@
         }
       }
     }, true);
+    document.body.addEventListener('mouseover', function (ev) {
+      if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
+    }, true);
+    document.body.addEventListener('mouseout', function (ev) {
+      if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
+    }, true);
     document.body.addEventListener('mousemove', function (ev) {
       if (isNonBlocking(ev.target)) {
         nonblockPass(ev.target, ev, 'onmousemove');
