@@ -14,9 +14,19 @@
     document.addEventListener('DOMContentLoaded', init);
   }
 })(() => {
-  const styling = document.createElement('style');
-  styling.setAttribute('type', 'text/css');
-  const css = `
+  function addCSS(css) {
+    const styling = document.createElement('style');
+    styling.setAttribute('type', 'text/css');
+    if (styling.styleSheet) {
+      styling.styleSheet.cssText = css; // IE
+    } else {
+      styling.appendChild(document.createTextNode(css));
+    }
+    document.getElementsByTagName('head')[0].appendChild(styling);
+    return styling;
+  }
+
+  addCSS(`
   .nonblock{transition:opacity .3s ease;}
   .nonblock:hover{opacity:.1 !important;}
   .nonblock-hide{display:none !important;}
@@ -56,13 +66,7 @@
   .nonblock-cursor-zoom-out{cursor:zoom-out;}
   .nonblock-cursor-grab{cursor:grab;}
   .nonblock-cursor-grabbing{cursor:grabbing;}
-  `;
-  if (styling.styleSheet) {
-    styling.styleSheet.cssText = css; // IE
-  } else {
-    styling.appendChild(document.createTextNode(css));
-  }
-  document.getElementsByTagName('head')[0].appendChild(styling);
+  `);
 
   // This keeps track of the last element the mouse was over, so
   // mouseleave, mouseenter, etc can be called.
@@ -84,9 +88,9 @@
     return el.classList.contains('nonblock-stoppropagation');
   }
 
-  function getCursor(el) {
-    const style = window.getComputedStyle(el);
-    return style.getPropertyValue('cursor');
+  function getStyle(el) {
+    return window.getComputedStyle(el);
+    // return style.getPropertyValue('cursor');
   }
 
   function setCursor(el, value) {
@@ -253,38 +257,92 @@
       text = range.startContainer.textContent.replace(/[\s\n]+$/g, '');
     }
 
-    elem.classList.remove('nonblock-hide');
-    let cursorStyle = getCursor(elBelow);
-    isOverTextNode = false;
-    if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
-      cursorStyle = 'pointer';
-    } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
-      if (cursorStyle === 'auto') {
-        cursorStyle = 'text';
-      }
-      isOverTextNode = true;
-    }
-
-    if (range && isSelectingText && offset > 0) {
-      const selection = window.getSelection();
-      let selectionRange, addRange = false;
-      if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
-        selectionRange = document.createRange();
-        selectionRange.setStart(range.startContainer, offset - 1);
-        addRange = true;
-      } else {
-        selectionRange = selection.getRangeAt(0);
-      }
-
-      selectionRange.setEnd(range.endContainer, offset);
-      if (addRange) {
-        window.getSelection().addRange(selectionRange);
-      }
-    }
-
-    setCursor(elem, cursorStyle !== 'auto' ? cursorStyle : 'default');
-    // If the element changed, call mouseenter, mouseleave, etc.
+    // Check if the element changed.
     if (!nonBlockLastElem || nonBlockLastElem !== elBelow) {
+
+      setTimeout(() => {
+        // = Calculate styles
+
+        let hoverStyle = getStyle(elBelow);
+        let hoverStyleMap = {};
+        for (let i = 0; i < hoverStyle.length; i++) {
+          const style = hoverStyle[i];
+          hoverStyleMap[style] = {
+            value: hoverStyle.getPropertyValue(style),
+            priority: hoverStyle.getPropertyPriority(style)
+          };
+        }
+        // if (elBelow.tagName === 'BUTTON')
+        //   debugger;
+        elem.classList.remove('nonblock-hide');
+
+        setTimeout(() => {
+          let noHoverStyle = getStyle(elBelow);
+
+          // Calculate styles that were applied while the element was hovered.
+          let hoverStyles = [];
+          for (let i = 0; i < hoverStyle.length; i++) {
+            const style = hoverStyle[i];
+            const hoverValue = hoverStyleMap[style]['value'];
+            const hoverPriority = hoverStyleMap[style]['priority'];
+            const noHoverValue = noHoverStyle.getPropertyValue(style);
+            const noHoverPriority = noHoverStyle.getPropertyPriority(style);
+            if (hoverValue !== noHoverValue || hoverPriority !== noHoverPriority) {
+              hoverStyles.push(style+': '+hoverValue+(hoverPriority ? ' !'+hoverPriority : '')+';');
+            }
+          }
+          console.log(hoverStyles);
+
+          // Calculate cursor.
+          let cursorStyle = noHoverStyle.getPropertyValue('cursor');
+          isOverTextNode = false;
+          if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
+            cursorStyle = 'pointer';
+          } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
+            if (cursorStyle === 'auto') {
+              cursorStyle = 'text';
+            }
+            isOverTextNode = true;
+          }
+
+          // = Handle text selection
+
+          if (range && isSelectingText && offset > 0) {
+            const selection = window.getSelection();
+            let selectionRange, addRange = false;
+            if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
+              selectionRange = document.createRange();
+              selectionRange.setStart(range.startContainer, offset - 1);
+              addRange = true;
+            } else {
+              selectionRange = selection.getRangeAt(0);
+            }
+
+            selectionRange.setEnd(range.endContainer, offset);
+            if (addRange) {
+              window.getSelection().addRange(selectionRange);
+            }
+          }
+
+          // = Apply styles
+
+          setCursor(elem, cursorStyle !== 'auto' ? cursorStyle : 'default');
+          if (elBelow.nonBlockStyleElem) {
+            elBelow.nonBlockStyleElem.parentNode.removeChild(elBelow.nonBlockStyleElem);
+            elBelow.classList.remove(elBelow.nonBlockStyleClassName);
+            delete elBelow.nonBlockStyleClassName;
+            delete elBelow.nonBlockStyleElem;
+          }
+          if (hoverStyles.length) {
+            elBelow.nonBlockStyleClassName = 'nonblock-hover-'+Math.floor(Math.random() * 9007199254740991);
+            elBelow.nonBlockStyleElem = addCSS('.'+elBelow.nonBlockStyleClassName+'{\n'+hoverStyles.join('\n')+'\n}');
+            elBelow.classList.add(elBelow.nonBlockStyleClassName);
+          }
+        }, 100);
+      }, 100);
+
+      // = Simulate mouse events
+
       if (nonBlockLastElem) {
         const lastElem = nonBlockLastElem;
         if (!lastElem.contains(elBelow)) {
@@ -298,8 +356,14 @@
         domEvent(elBelow, 'mouseenter', event, false);
       }
       domEvent(elBelow, 'mouseover', event, true);
+
+    } else {
+      elem.classList.remove('nonblock-hide');
     }
+
+    // Forward the event.
     domEvent(elBelow, eventName, event);
+
     // Remember the latest element the mouse was over.
     nonBlockLastElem = elBelow;
   };

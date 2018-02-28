@@ -29,15 +29,19 @@
       document.addEventListener('DOMContentLoaded', init);
     }
   })(function () {
-    var styling = document.createElement('style');
-    styling.setAttribute('type', 'text/css');
-    var css = '\n  .nonblock{transition:opacity .3s ease;}\n  .nonblock:hover{opacity:.1 !important;}\n  .nonblock-hide{display:none !important;}\n  .nonblock-cursor-auto{cursor:auto;}\n  .nonblock-cursor-default{cursor:default;}\n  .nonblock-cursor-none{cursor:none;}\n  .nonblock-cursor-context-menu{cursor:context-menu;}\n  .nonblock-cursor-help{cursor:help;}\n  .nonblock-cursor-pointer{cursor:pointer;}\n  .nonblock-cursor-progress{cursor:progress;}\n  .nonblock-cursor-wait{cursor:wait;}\n  .nonblock-cursor-cell{cursor:cell;}\n  .nonblock-cursor-crosshair{cursor:crosshair;}\n  .nonblock-cursor-text{cursor:text;}\n  .nonblock-cursor-vertical-text{cursor:vertical-text;}\n  .nonblock-cursor-alias{cursor:alias;}\n  .nonblock-cursor-copy{cursor:copy;}\n  .nonblock-cursor-move{cursor:move;}\n  .nonblock-cursor-no-drop{cursor:no-drop;}\n  .nonblock-cursor-not-allowed{cursor:not-allowed;}\n  .nonblock-cursor-all-scroll{cursor:all-scroll;}\n  .nonblock-cursor-col-resize{cursor:col-resize;}\n  .nonblock-cursor-row-resize{cursor:row-resize;}\n  .nonblock-cursor-n-resize{cursor:n-resize;}\n  .nonblock-cursor-e-resize{cursor:e-resize;}\n  .nonblock-cursor-s-resize{cursor:s-resize;}\n  .nonblock-cursor-w-resize{cursor:w-resize;}\n  .nonblock-cursor-ne-resize{cursor:ne-resize;}\n  .nonblock-cursor-nw-resize{cursor:nw-resize;}\n  .nonblock-cursor-se-resize{cursor:se-resize;}\n  .nonblock-cursor-sw-resize{cursor:sw-resize;}\n  .nonblock-cursor-ew-resize{cursor:ew-resize;}\n  .nonblock-cursor-ns-resize{cursor:ns-resize;}\n  .nonblock-cursor-nesw-resize{cursor:nesw-resize;}\n  .nonblock-cursor-nwse-resize{cursor:nwse-resize;}\n  .nonblock-cursor-zoom-in{cursor:zoom-in;}\n  .nonblock-cursor-zoom-out{cursor:zoom-out;}\n  .nonblock-cursor-grab{cursor:grab;}\n  .nonblock-cursor-grabbing{cursor:grabbing;}\n  ';
-    if (styling.styleSheet) {
-      styling.styleSheet.cssText = css; // IE
-    } else {
-      styling.appendChild(document.createTextNode(css));
+    function addCSS(css) {
+      var styling = document.createElement('style');
+      styling.setAttribute('type', 'text/css');
+      if (styling.styleSheet) {
+        styling.styleSheet.cssText = css; // IE
+      } else {
+        styling.appendChild(document.createTextNode(css));
+      }
+      document.getElementsByTagName('head')[0].appendChild(styling);
+      return styling;
     }
-    document.getElementsByTagName('head')[0].appendChild(styling);
+
+    addCSS('\n  .nonblock{transition:opacity .3s ease;}\n  .nonblock:hover{opacity:.1 !important;}\n  .nonblock-hide{display:none !important;}\n  .nonblock-cursor-auto{cursor:auto;}\n  .nonblock-cursor-default{cursor:default;}\n  .nonblock-cursor-none{cursor:none;}\n  .nonblock-cursor-context-menu{cursor:context-menu;}\n  .nonblock-cursor-help{cursor:help;}\n  .nonblock-cursor-pointer{cursor:pointer;}\n  .nonblock-cursor-progress{cursor:progress;}\n  .nonblock-cursor-wait{cursor:wait;}\n  .nonblock-cursor-cell{cursor:cell;}\n  .nonblock-cursor-crosshair{cursor:crosshair;}\n  .nonblock-cursor-text{cursor:text;}\n  .nonblock-cursor-vertical-text{cursor:vertical-text;}\n  .nonblock-cursor-alias{cursor:alias;}\n  .nonblock-cursor-copy{cursor:copy;}\n  .nonblock-cursor-move{cursor:move;}\n  .nonblock-cursor-no-drop{cursor:no-drop;}\n  .nonblock-cursor-not-allowed{cursor:not-allowed;}\n  .nonblock-cursor-all-scroll{cursor:all-scroll;}\n  .nonblock-cursor-col-resize{cursor:col-resize;}\n  .nonblock-cursor-row-resize{cursor:row-resize;}\n  .nonblock-cursor-n-resize{cursor:n-resize;}\n  .nonblock-cursor-e-resize{cursor:e-resize;}\n  .nonblock-cursor-s-resize{cursor:s-resize;}\n  .nonblock-cursor-w-resize{cursor:w-resize;}\n  .nonblock-cursor-ne-resize{cursor:ne-resize;}\n  .nonblock-cursor-nw-resize{cursor:nw-resize;}\n  .nonblock-cursor-se-resize{cursor:se-resize;}\n  .nonblock-cursor-sw-resize{cursor:sw-resize;}\n  .nonblock-cursor-ew-resize{cursor:ew-resize;}\n  .nonblock-cursor-ns-resize{cursor:ns-resize;}\n  .nonblock-cursor-nesw-resize{cursor:nesw-resize;}\n  .nonblock-cursor-nwse-resize{cursor:nwse-resize;}\n  .nonblock-cursor-zoom-in{cursor:zoom-in;}\n  .nonblock-cursor-zoom-out{cursor:zoom-out;}\n  .nonblock-cursor-grab{cursor:grab;}\n  .nonblock-cursor-grabbing{cursor:grabbing;}\n  ');
 
     // This keeps track of the last element the mouse was over, so
     // mouseleave, mouseenter, etc can be called.
@@ -59,9 +63,9 @@
       return el.classList.contains('nonblock-stoppropagation');
     }
 
-    function getCursor(el) {
-      var style = window.getComputedStyle(el);
-      return style.getPropertyValue('cursor');
+    function getStyle(el) {
+      return window.getComputedStyle(el);
+      // return style.getPropertyValue('cursor');
     }
 
     function setCursor(el, value) {
@@ -93,6 +97,16 @@
         if (isNotPropagating(ev.target)) {
           ev.stopPropagation();
         }
+      }
+    }, true);
+    document.body.addEventListener('mouseover', function (ev) {
+      if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+        ev.stopPropagation();
+      }
+    }, true);
+    document.body.addEventListener('mouseout', function (ev) {
+      if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+        ev.stopPropagation();
       }
     }, true);
     document.body.addEventListener('mousemove', function (ev) {
@@ -206,39 +220,89 @@
         text = range.startContainer.textContent.replace(/[\s\n]+$/g, '');
       }
 
-      elem.classList.remove('nonblock-hide');
-      var cursorStyle = getCursor(elBelow);
-      isOverTextNode = false;
-      if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
-        cursorStyle = 'pointer';
-      } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
-        if (cursorStyle === 'auto') {
-          cursorStyle = 'text';
-        }
-        isOverTextNode = true;
-      }
-
-      if (range && isSelectingText && offset > 0) {
-        var selection = window.getSelection();
-        var selectionRange = void 0,
-            addRange = false;
-        if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
-          selectionRange = document.createRange();
-          selectionRange.setStart(range.startContainer, offset - 1);
-          addRange = true;
-        } else {
-          selectionRange = selection.getRangeAt(0);
-        }
-
-        selectionRange.setEnd(range.endContainer, offset);
-        if (addRange) {
-          window.getSelection().addRange(selectionRange);
-        }
-      }
-
-      setCursor(elem, cursorStyle !== 'auto' ? cursorStyle : 'default');
-      // If the element changed, call mouseenter, mouseleave, etc.
+      // Check if the element changed.
       if (!nonBlockLastElem || nonBlockLastElem !== elBelow) {
+
+        // = Calculate styles
+
+        var hoverStyle = window.getComputedStyle(elBelow, 'hover');
+        var hoverStyleMap = {};
+        for (var i = 0; i < hoverStyle.length; i++) {
+          var style = hoverStyle[i];
+          hoverStyleMap[style] = {
+            value: hoverStyle.getPropertyValue(style),
+            priority: hoverStyle.getPropertyPriority(style)
+          };
+        }
+        // if (elBelow.tagName === 'BUTTON')
+        //   debugger;
+        elem.classList.remove('nonblock-hide');
+
+        var noHoverStyle = getStyle(elBelow);
+
+        // Calculate styles that were applied while the element was hovered.
+        var hoverStyles = [];
+        for (var _i = 0; _i < hoverStyle.length; _i++) {
+          var _style = hoverStyle[_i];
+          var hoverValue = hoverStyleMap[_style]['value'];
+          var hoverPriority = hoverStyleMap[_style]['priority'];
+          var noHoverValue = noHoverStyle.getPropertyValue(_style);
+          var noHoverPriority = noHoverStyle.getPropertyPriority(_style);
+          if (hoverValue !== noHoverValue || hoverPriority !== noHoverPriority) {
+            hoverStyles.push(_style + ': ' + hoverValue + (hoverPriority ? ' !' + hoverPriority : '') + ';');
+          }
+        }
+        console.log(hoverStyles);
+
+        // Calculate cursor.
+        var cursorStyle = noHoverStyle.getPropertyValue('cursor');
+        isOverTextNode = false;
+        if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
+          cursorStyle = 'pointer';
+        } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
+          if (cursorStyle === 'auto') {
+            cursorStyle = 'text';
+          }
+          isOverTextNode = true;
+        }
+
+        // = Handle text selection
+
+        if (range && isSelectingText && offset > 0) {
+          var selection = window.getSelection();
+          var selectionRange = void 0,
+              addRange = false;
+          if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
+            selectionRange = document.createRange();
+            selectionRange.setStart(range.startContainer, offset - 1);
+            addRange = true;
+          } else {
+            selectionRange = selection.getRangeAt(0);
+          }
+
+          selectionRange.setEnd(range.endContainer, offset);
+          if (addRange) {
+            window.getSelection().addRange(selectionRange);
+          }
+        }
+
+        // = Apply styles
+
+        setCursor(elem, cursorStyle !== 'auto' ? cursorStyle : 'default');
+        if (elBelow.nonBlockStyleElem) {
+          elBelow.nonBlockStyleElem.parentNode.removeChild(elBelow.nonBlockStyleElem);
+          elBelow.classList.remove(elBelow.nonBlockStyleClassName);
+          delete elBelow.nonBlockStyleClassName;
+          delete elBelow.nonBlockStyleElem;
+        }
+        if (hoverStyles.length) {
+          elBelow.nonBlockStyleClassName = 'nonblock-hover-' + Math.floor(Math.random() * 9007199254740991);
+          elBelow.nonBlockStyleElem = addCSS('.' + elBelow.nonBlockStyleClassName + '{\n' + hoverStyles.join('\n') + '\n}');
+          elBelow.classList.add(elBelow.nonBlockStyleClassName);
+        }
+
+        // = Simulate mouse events
+
         if (nonBlockLastElem) {
           var lastElem = nonBlockLastElem;
           if (!lastElem.contains(elBelow)) {
@@ -252,8 +316,13 @@
           domEvent(elBelow, 'mouseenter', event, false);
         }
         domEvent(elBelow, 'mouseover', event, true);
+      } else {
+        elem.classList.remove('nonblock-hide');
       }
+
+      // Forward the event.
       domEvent(elBelow, eventName, event);
+
       // Remember the latest element the mouse was over.
       nonBlockLastElem = elBelow;
     };
