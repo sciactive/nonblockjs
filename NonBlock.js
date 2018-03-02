@@ -20,42 +20,42 @@
   .nonblock{transition:opacity .3s ease;}
   .nonblock:hover{opacity:.1 !important;}
   .nonblock-hide{display:none !important;}
-  .nonblock-cursor-auto{cursor:auto;}
-  .nonblock-cursor-default{cursor:default;}
-  .nonblock-cursor-none{cursor:none;}
-  .nonblock-cursor-context-menu{cursor:context-menu;}
-  .nonblock-cursor-help{cursor:help;}
-  .nonblock-cursor-pointer{cursor:pointer;}
-  .nonblock-cursor-progress{cursor:progress;}
-  .nonblock-cursor-wait{cursor:wait;}
-  .nonblock-cursor-cell{cursor:cell;}
-  .nonblock-cursor-crosshair{cursor:crosshair;}
-  .nonblock-cursor-text{cursor:text;}
-  .nonblock-cursor-vertical-text{cursor:vertical-text;}
-  .nonblock-cursor-alias{cursor:alias;}
-  .nonblock-cursor-copy{cursor:copy;}
-  .nonblock-cursor-move{cursor:move;}
-  .nonblock-cursor-no-drop{cursor:no-drop;}
-  .nonblock-cursor-not-allowed{cursor:not-allowed;}
-  .nonblock-cursor-all-scroll{cursor:all-scroll;}
-  .nonblock-cursor-col-resize{cursor:col-resize;}
-  .nonblock-cursor-row-resize{cursor:row-resize;}
-  .nonblock-cursor-n-resize{cursor:n-resize;}
-  .nonblock-cursor-e-resize{cursor:e-resize;}
-  .nonblock-cursor-s-resize{cursor:s-resize;}
-  .nonblock-cursor-w-resize{cursor:w-resize;}
-  .nonblock-cursor-ne-resize{cursor:ne-resize;}
-  .nonblock-cursor-nw-resize{cursor:nw-resize;}
-  .nonblock-cursor-se-resize{cursor:se-resize;}
-  .nonblock-cursor-sw-resize{cursor:sw-resize;}
-  .nonblock-cursor-ew-resize{cursor:ew-resize;}
-  .nonblock-cursor-ns-resize{cursor:ns-resize;}
-  .nonblock-cursor-nesw-resize{cursor:nesw-resize;}
-  .nonblock-cursor-nwse-resize{cursor:nwse-resize;}
-  .nonblock-cursor-zoom-in{cursor:zoom-in;}
-  .nonblock-cursor-zoom-out{cursor:zoom-out;}
-  .nonblock-cursor-grab{cursor:grab;}
-  .nonblock-cursor-grabbing{cursor:grabbing;}
+  .nonblock-cursor-auto{cursor:auto !important;}
+  .nonblock-cursor-default{cursor:default !important;}
+  .nonblock-cursor-none{cursor:none !important;}
+  .nonblock-cursor-context-menu{cursor:context-menu !important;}
+  .nonblock-cursor-help{cursor:help !important;}
+  .nonblock-cursor-pointer{cursor:pointer !important;}
+  .nonblock-cursor-progress{cursor:progress !important;}
+  .nonblock-cursor-wait{cursor:wait !important;}
+  .nonblock-cursor-cell{cursor:cell !important;}
+  .nonblock-cursor-crosshair{cursor:crosshair !important;}
+  .nonblock-cursor-text{cursor:text !important;}
+  .nonblock-cursor-vertical-text{cursor:vertical-text !important;}
+  .nonblock-cursor-alias{cursor:alias !important;}
+  .nonblock-cursor-copy{cursor:copy !important;}
+  .nonblock-cursor-move{cursor:move !important;}
+  .nonblock-cursor-no-drop{cursor:no-drop !important;}
+  .nonblock-cursor-not-allowed{cursor:not-allowed !important;}
+  .nonblock-cursor-all-scroll{cursor:all-scroll !important;}
+  .nonblock-cursor-col-resize{cursor:col-resize !important;}
+  .nonblock-cursor-row-resize{cursor:row-resize !important;}
+  .nonblock-cursor-n-resize{cursor:n-resize !important;}
+  .nonblock-cursor-e-resize{cursor:e-resize !important;}
+  .nonblock-cursor-s-resize{cursor:s-resize !important;}
+  .nonblock-cursor-w-resize{cursor:w-resize !important;}
+  .nonblock-cursor-ne-resize{cursor:ne-resize !important;}
+  .nonblock-cursor-nw-resize{cursor:nw-resize !important;}
+  .nonblock-cursor-se-resize{cursor:se-resize !important;}
+  .nonblock-cursor-sw-resize{cursor:sw-resize !important;}
+  .nonblock-cursor-ew-resize{cursor:ew-resize !important;}
+  .nonblock-cursor-ns-resize{cursor:ns-resize !important;}
+  .nonblock-cursor-nesw-resize{cursor:nesw-resize !important;}
+  .nonblock-cursor-nwse-resize{cursor:nwse-resize !important;}
+  .nonblock-cursor-zoom-in{cursor:zoom-in !important;}
+  .nonblock-cursor-zoom-out{cursor:zoom-out !important;}
+  .nonblock-cursor-grab{cursor:grab !important;}
+  .nonblock-cursor-grabbing{cursor:grabbing !important;}
   `;
   if (styling.styleSheet) {
     styling.styleSheet.cssText = css; // IE
@@ -76,12 +76,23 @@
         regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/,
         regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
 
-  function isNonBlocking(el) {
-    return el.classList.contains('nonblock');
+  function getNonBlocking(el) {
+    let nonblock = el;
+    while (nonblock) {
+      if (nonblock.classList && nonblock.classList.contains('nonblock')) {
+        return nonblock;
+      }
+      nonblock = nonblock.parentNode;
+    }
+    return false;
   }
 
   function isNotPropagating(el) {
-    return el.classList.contains('nonblock-stoppropagation');
+    return el.classList.contains('nonblock-stop-propagation');
+  }
+
+  function isActionNotPropagating(el) {
+    return !el.classList.contains('nonblock-allow-action-propagation');
   }
 
   function getCursor(el) {
@@ -90,6 +101,9 @@
   }
 
   function setCursor(el, value) {
+    if (el.classList.contains('nonblock-cursor-' + value)) {
+      return;
+    }
     remCursor(el);
     el.classList.add('nonblock-cursor-' + value);
   }
@@ -103,116 +117,158 @@
   }
 
   document.body.addEventListener('mouseenter', (ev) => {
-    if (isNonBlocking(ev.target)) {
-      nonBlockLastElem = ev.target;
-      if (isNotPropagating(ev.target)) {
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+      nonBlockLastElem = nonblock;
+      if (isNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }
   }, true);
   document.body.addEventListener('mouseleave', (ev) => {
-    if (isNonBlocking(ev.target)) {
-      remCursor(ev.target);
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+      remCursor(nonblock);
       nonBlockLastElem = null;
       isSelectingText = false;
-      if (isNotPropagating(ev.target)) {
+      if (isNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }
   }, true);
   document.body.addEventListener('mouseover', (ev) => {
-    if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target)) && isNotPropagating(nonblock)) {
       ev.stopPropagation();
     }
   }, true);
   document.body.addEventListener('mouseout', (ev) => {
-    if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target)) && isNotPropagating(nonblock)) {
       ev.stopPropagation();
     }
   }, true);
   document.body.addEventListener('mousemove', (ev) => {
-   if (isNonBlocking(ev.target)) {
-     nonblockPass(ev.target, ev, 'onmousemove');
+   let nonblock;
+   if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+     nonblockPass(nonblock, ev, 'onmousemove');
      // If the user just clicks somewhere, we don't want to select text, so this
      // detects that the user moved their mouse.
      if (isSelectingText === null) {
        window.getSelection().removeAllRanges();
        isSelectingText = true;
      }
-     if (isNotPropagating(ev.target)) {
+     if (isNotPropagating(nonblock)) {
        ev.stopPropagation();
      }
    }
  }, true);
   document.body.addEventListener('mousedown', (ev) => {
-    if (isNonBlocking(ev.target)) {
-      ev.preventDefault();
-      nonblockPass(ev.target, ev, 'onmousedown');
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+      nonblockPass(nonblock, ev, 'onmousedown');
       isSelectingText = null;
-      if (isNotPropagating(ev.target)) {
+      if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }
   }, true);
   document.body.addEventListener('mouseup', (ev) => {
-    if (isNonBlocking(ev.target)) {
-      ev.preventDefault();
-      nonblockPass(ev.target, ev, 'onmouseup');
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+      nonblockPass(nonblock, ev, 'onmouseup');
       if (isSelectingText === null) {
         window.getSelection().removeAllRanges();
       }
       isSelectingText = false;
-      if (isNotPropagating(ev.target)) {
+      if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }
   }, true);
   document.body.addEventListener('click', (ev) => {
-    if (isNonBlocking(ev.target)) {
-      nonblockPass(ev.target, ev, 'onclick');
-      if (isNotPropagating(ev.target)) {
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+      nonblockPass(nonblock, ev, 'onclick');
+      if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }
   }, true);
   document.body.addEventListener('dblclick', (ev) => {
-    if (isNonBlocking(ev.target)) {
-      nonblockPass(ev.target, ev, 'ondblclick');
-      if (isNotPropagating(ev.target)) {
+    let nonblock;
+    if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+      nonblockPass(nonblock, ev, 'ondblclick');
+      if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }
   }, true);
 
   // Fire a DOM event.
+  let useEventConstructors = true;
+  try {
+    const e = new MouseEvent('click');
+  } catch (e) {
+    useEventConstructors = false;
+  }
   const domEvent = (elem, event, origEvent, bubbles) => {
     let eventObject;
     event = event.toLowerCase();
-    if (document.createEvent && elem.dispatchEvent) {
-      // FireFox, Opera, Safari, Chrome
+    if (useEventConstructors) {
+      // New browsers
+      event = event.replace(regexOn, '');
+      if (event.match(regexMouseEvents)) {
+        eventObject = new MouseEvent(event, {
+          screenX: origEvent.screenX,
+          screenY: origEvent.screenY,
+          clientX: origEvent.clientX,
+          clientY: origEvent.clientY,
+          ctrlKey: origEvent.ctrlKey,
+          shiftKey: origEvent.shiftKey,
+          altKey: origEvent.altKey,
+          metaKey: origEvent.metaKey,
+          button: origEvent.button,
+          buttons: origEvent.buttons,
+          relatedTarget: origEvent.relatedTarget,
+          region: origEvent.region,
+
+          detail: origEvent.detail,
+          view: origEvent.view,
+
+          bubbles: bubbles === undefined ? origEvent.bubbles : bubbles,
+          cancelable: origEvent.cancelable,
+          composed: origEvent.composed
+        });
+      } else if (event.match(regexUiEvents)) {
+        eventObject = new UIEvent(event, {
+          detail: origEvent.detail,
+          view: origEvent.view,
+
+          bubbles: bubbles === undefined ? origEvent.bubbles : bubbles,
+          cancelable: origEvent.cancelable,
+          composed: origEvent.composed
+        });
+      } else if (event.match(regexHtmlEvents)) {
+        eventObject = new Event(event, {
+          bubbles: bubbles === undefined ? origEvent.bubbles : bubbles,
+          cancelable: origEvent.cancelable,
+          composed: origEvent.composed
+        });
+      }
+      if (!eventObject) {
+        return;
+      }
+      elem.dispatchEvent(eventObject);
+    } else if (document.createEvent && elem.dispatchEvent) {
+      // Old method for FireFox, Opera, Safari, Chrome
       event = event.replace(regexOn, '');
       if (event.match(regexMouseEvents)) {
         // This allows the click event to fire on the notice. There is
         // probably a much better way to do it.
         elem.getBoundingClientRect();
         eventObject = document.createEvent("MouseEvents");
-        eventObject.initMouseEvent(
-          event,
-          bubbles === undefined ? origEvent.bubbles : bubbles,
-          origEvent.cancelable,
-          origEvent.view,
-          origEvent.detail,
-          origEvent.screenX,
-          origEvent.screenY,
-          origEvent.clientX,
-          origEvent.clientY,
-          origEvent.ctrlKey,
-          origEvent.altKey,
-          origEvent.shiftKey,
-          origEvent.metaKey,
-          origEvent.button,
-          origEvent.relatedTarget
-        );
+        eventObject.initMouseEvent(event, bubbles === undefined ? origEvent.bubbles : bubbles, origEvent.cancelable, origEvent.view, origEvent.detail, origEvent.screenX, origEvent.screenY, origEvent.clientX, origEvent.clientY, origEvent.ctrlKey, origEvent.altKey, origEvent.shiftKey, origEvent.metaKey, origEvent.button, origEvent.relatedTarget);
       } else if (event.match(regexUiEvents)) {
         eventObject = document.createEvent("UIEvents");
         eventObject.initUIEvent(event, bubbles === undefined ? origEvent.bubbles : bubbles, origEvent.cancelable, origEvent.view, origEvent.detail);
@@ -221,8 +277,8 @@
         eventObject.initEvent(event, bubbles === undefined ? origEvent.bubbles : bubbles, origEvent.cancelable);
       }
       if (!eventObject) {
-        return
-      };
+        return;
+      }
       elem.dispatchEvent(eventObject);
     } else {
       // Internet Explorer
@@ -241,12 +297,12 @@
     let range, textNode, whitespaceBefore, text, offset;
     if (document.caretPositionFromPoint) {
       range = document.caretPositionFromPoint(event.clientX, event.clientY);
-      textNode = range.offsetNode;
-      offset = range.offset;
+      textNode = range ? range.offsetNode : null;
+      offset = range ? range.offset : null;
     } else if (document.caretRangeFromPoint) {
       range = document.caretRangeFromPoint(event.clientX, event.clientY);
-      textNode = range.startContainer;
-      offset = range.startOffset;
+      textNode = range ? range.startContainer : null;
+      offset = range ? range.startOffset : null;
     }
     if (range) {
       whitespaceBefore = range.startContainer.textContent.match(/^[\s\n]*/)[0];
@@ -258,7 +314,7 @@
     isOverTextNode = false;
     if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
       cursorStyle = 'pointer';
-    } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
+    } else if (range && (!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
       if (cursorStyle === 'auto') {
         cursorStyle = 'text';
       }

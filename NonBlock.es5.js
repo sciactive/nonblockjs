@@ -31,7 +31,7 @@
   })(function () {
     var styling = document.createElement('style');
     styling.setAttribute('type', 'text/css');
-    var css = '\n  .nonblock{transition:opacity .3s ease;}\n  .nonblock:hover{opacity:.1 !important;}\n  .nonblock-hide{display:none !important;}\n  .nonblock-cursor-auto{cursor:auto;}\n  .nonblock-cursor-default{cursor:default;}\n  .nonblock-cursor-none{cursor:none;}\n  .nonblock-cursor-context-menu{cursor:context-menu;}\n  .nonblock-cursor-help{cursor:help;}\n  .nonblock-cursor-pointer{cursor:pointer;}\n  .nonblock-cursor-progress{cursor:progress;}\n  .nonblock-cursor-wait{cursor:wait;}\n  .nonblock-cursor-cell{cursor:cell;}\n  .nonblock-cursor-crosshair{cursor:crosshair;}\n  .nonblock-cursor-text{cursor:text;}\n  .nonblock-cursor-vertical-text{cursor:vertical-text;}\n  .nonblock-cursor-alias{cursor:alias;}\n  .nonblock-cursor-copy{cursor:copy;}\n  .nonblock-cursor-move{cursor:move;}\n  .nonblock-cursor-no-drop{cursor:no-drop;}\n  .nonblock-cursor-not-allowed{cursor:not-allowed;}\n  .nonblock-cursor-all-scroll{cursor:all-scroll;}\n  .nonblock-cursor-col-resize{cursor:col-resize;}\n  .nonblock-cursor-row-resize{cursor:row-resize;}\n  .nonblock-cursor-n-resize{cursor:n-resize;}\n  .nonblock-cursor-e-resize{cursor:e-resize;}\n  .nonblock-cursor-s-resize{cursor:s-resize;}\n  .nonblock-cursor-w-resize{cursor:w-resize;}\n  .nonblock-cursor-ne-resize{cursor:ne-resize;}\n  .nonblock-cursor-nw-resize{cursor:nw-resize;}\n  .nonblock-cursor-se-resize{cursor:se-resize;}\n  .nonblock-cursor-sw-resize{cursor:sw-resize;}\n  .nonblock-cursor-ew-resize{cursor:ew-resize;}\n  .nonblock-cursor-ns-resize{cursor:ns-resize;}\n  .nonblock-cursor-nesw-resize{cursor:nesw-resize;}\n  .nonblock-cursor-nwse-resize{cursor:nwse-resize;}\n  .nonblock-cursor-zoom-in{cursor:zoom-in;}\n  .nonblock-cursor-zoom-out{cursor:zoom-out;}\n  .nonblock-cursor-grab{cursor:grab;}\n  .nonblock-cursor-grabbing{cursor:grabbing;}\n  ';
+    var css = '\n  .nonblock{transition:opacity .3s ease;}\n  .nonblock:hover{opacity:.1 !important;}\n  .nonblock-hide{display:none !important;}\n  .nonblock-cursor-auto{cursor:auto !important;}\n  .nonblock-cursor-default{cursor:default !important;}\n  .nonblock-cursor-none{cursor:none !important;}\n  .nonblock-cursor-context-menu{cursor:context-menu !important;}\n  .nonblock-cursor-help{cursor:help !important;}\n  .nonblock-cursor-pointer{cursor:pointer !important;}\n  .nonblock-cursor-progress{cursor:progress !important;}\n  .nonblock-cursor-wait{cursor:wait !important;}\n  .nonblock-cursor-cell{cursor:cell !important;}\n  .nonblock-cursor-crosshair{cursor:crosshair !important;}\n  .nonblock-cursor-text{cursor:text !important;}\n  .nonblock-cursor-vertical-text{cursor:vertical-text !important;}\n  .nonblock-cursor-alias{cursor:alias !important;}\n  .nonblock-cursor-copy{cursor:copy !important;}\n  .nonblock-cursor-move{cursor:move !important;}\n  .nonblock-cursor-no-drop{cursor:no-drop !important;}\n  .nonblock-cursor-not-allowed{cursor:not-allowed !important;}\n  .nonblock-cursor-all-scroll{cursor:all-scroll !important;}\n  .nonblock-cursor-col-resize{cursor:col-resize !important;}\n  .nonblock-cursor-row-resize{cursor:row-resize !important;}\n  .nonblock-cursor-n-resize{cursor:n-resize !important;}\n  .nonblock-cursor-e-resize{cursor:e-resize !important;}\n  .nonblock-cursor-s-resize{cursor:s-resize !important;}\n  .nonblock-cursor-w-resize{cursor:w-resize !important;}\n  .nonblock-cursor-ne-resize{cursor:ne-resize !important;}\n  .nonblock-cursor-nw-resize{cursor:nw-resize !important;}\n  .nonblock-cursor-se-resize{cursor:se-resize !important;}\n  .nonblock-cursor-sw-resize{cursor:sw-resize !important;}\n  .nonblock-cursor-ew-resize{cursor:ew-resize !important;}\n  .nonblock-cursor-ns-resize{cursor:ns-resize !important;}\n  .nonblock-cursor-nesw-resize{cursor:nesw-resize !important;}\n  .nonblock-cursor-nwse-resize{cursor:nwse-resize !important;}\n  .nonblock-cursor-zoom-in{cursor:zoom-in !important;}\n  .nonblock-cursor-zoom-out{cursor:zoom-out !important;}\n  .nonblock-cursor-grab{cursor:grab !important;}\n  .nonblock-cursor-grabbing{cursor:grabbing !important;}\n  ';
     if (styling.styleSheet) {
       styling.styleSheet.cssText = css; // IE
     } else {
@@ -51,12 +51,23 @@
         regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/,
         regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
 
-    function isNonBlocking(el) {
-      return el.classList.contains('nonblock');
+    function getNonBlocking(el) {
+      var nonblock = el;
+      while (nonblock) {
+        if (nonblock.classList && nonblock.classList.contains('nonblock')) {
+          return nonblock;
+        }
+        nonblock = nonblock.parentNode;
+      }
+      return false;
     }
 
     function isNotPropagating(el) {
-      return el.classList.contains('nonblock-stoppropagation');
+      return el.classList.contains('nonblock-stop-propagation');
+    }
+
+    function isActionNotPropagating(el) {
+      return !el.classList.contains('nonblock-allow-action-propagation');
     }
 
     function getCursor(el) {
@@ -65,6 +76,9 @@
     }
 
     function setCursor(el, value) {
+      if (el.classList.contains('nonblock-cursor-' + value)) {
+        return;
+      }
       remCursor(el);
       el.classList.add('nonblock-cursor-' + value);
     }
@@ -78,93 +92,151 @@
     }
 
     document.body.addEventListener('mouseenter', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        nonBlockLastElem = ev.target;
-        if (isNotPropagating(ev.target)) {
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        nonBlockLastElem = nonblock;
+        if (isNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
     document.body.addEventListener('mouseleave', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        remCursor(ev.target);
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        remCursor(nonblock);
         nonBlockLastElem = null;
         isSelectingText = false;
-        if (isNotPropagating(ev.target)) {
+        if (isNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
     document.body.addEventListener('mouseover', function (ev) {
-      if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target)) && isNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }, true);
     document.body.addEventListener('mouseout', function (ev) {
-      if (isNonBlocking(ev.target) && isNotPropagating(ev.target)) {
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target)) && isNotPropagating(nonblock)) {
         ev.stopPropagation();
       }
     }, true);
     document.body.addEventListener('mousemove', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        nonblockPass(ev.target, ev, 'onmousemove');
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        nonblockPass(nonblock, ev, 'onmousemove');
         // If the user just clicks somewhere, we don't want to select text, so this
         // detects that the user moved their mouse.
         if (isSelectingText === null) {
           window.getSelection().removeAllRanges();
           isSelectingText = true;
         }
-        if (isNotPropagating(ev.target)) {
+        if (isNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
     document.body.addEventListener('mousedown', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        ev.preventDefault();
-        nonblockPass(ev.target, ev, 'onmousedown');
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        nonblockPass(nonblock, ev, 'onmousedown');
         isSelectingText = null;
-        if (isNotPropagating(ev.target)) {
+        if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
     document.body.addEventListener('mouseup', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        ev.preventDefault();
-        nonblockPass(ev.target, ev, 'onmouseup');
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        nonblockPass(nonblock, ev, 'onmouseup');
         if (isSelectingText === null) {
           window.getSelection().removeAllRanges();
         }
         isSelectingText = false;
-        if (isNotPropagating(ev.target)) {
+        if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
     document.body.addEventListener('click', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        nonblockPass(ev.target, ev, 'onclick');
-        if (isNotPropagating(ev.target)) {
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        nonblockPass(nonblock, ev, 'onclick');
+        if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
     document.body.addEventListener('dblclick', function (ev) {
-      if (isNonBlocking(ev.target)) {
-        nonblockPass(ev.target, ev, 'ondblclick');
-        if (isNotPropagating(ev.target)) {
+      var nonblock = void 0;
+      if (ev.isTrusted && (nonblock = getNonBlocking(ev.target))) {
+        nonblockPass(nonblock, ev, 'ondblclick');
+        if (isNotPropagating(nonblock) || isActionNotPropagating(nonblock)) {
           ev.stopPropagation();
         }
       }
     }, true);
 
     // Fire a DOM event.
+    var useEventConstructors = true;
+    try {
+      var e = new MouseEvent('click');
+    } catch (e) {
+      useEventConstructors = false;
+    }
     var domEvent = function domEvent(elem, event, origEvent, bubbles) {
       var eventObject = void 0;
       event = event.toLowerCase();
-      if (document.createEvent && elem.dispatchEvent) {
-        // FireFox, Opera, Safari, Chrome
+      if (useEventConstructors) {
+        // New browsers
+        event = event.replace(regexOn, '');
+        if (event.match(regexMouseEvents)) {
+          eventObject = new MouseEvent(event, {
+            screenX: origEvent.screenX,
+            screenY: origEvent.screenY,
+            clientX: origEvent.clientX,
+            clientY: origEvent.clientY,
+            ctrlKey: origEvent.ctrlKey,
+            shiftKey: origEvent.shiftKey,
+            altKey: origEvent.altKey,
+            metaKey: origEvent.metaKey,
+            button: origEvent.button,
+            buttons: origEvent.buttons,
+            relatedTarget: origEvent.relatedTarget,
+            region: origEvent.region,
+
+            detail: origEvent.detail,
+            view: origEvent.view,
+
+            bubbles: bubbles === undefined ? origEvent.bubbles : bubbles,
+            cancelable: origEvent.cancelable,
+            composed: origEvent.composed
+          });
+        } else if (event.match(regexUiEvents)) {
+          eventObject = new UIEvent(event, {
+            detail: origEvent.detail,
+            view: origEvent.view,
+
+            bubbles: bubbles === undefined ? origEvent.bubbles : bubbles,
+            cancelable: origEvent.cancelable,
+            composed: origEvent.composed
+          });
+        } else if (event.match(regexHtmlEvents)) {
+          eventObject = new Event(event, {
+            bubbles: bubbles === undefined ? origEvent.bubbles : bubbles,
+            cancelable: origEvent.cancelable,
+            composed: origEvent.composed
+          });
+        }
+        if (!eventObject) {
+          return;
+        }
+        elem.dispatchEvent(eventObject);
+      } else if (document.createEvent && elem.dispatchEvent) {
+        // Old method for FireFox, Opera, Safari, Chrome
         event = event.replace(regexOn, '');
         if (event.match(regexMouseEvents)) {
           // This allows the click event to fire on the notice. There is
@@ -181,7 +253,7 @@
         }
         if (!eventObject) {
           return;
-        };
+        }
         elem.dispatchEvent(eventObject);
       } else {
         // Internet Explorer
@@ -204,12 +276,12 @@
           offset = void 0;
       if (document.caretPositionFromPoint) {
         range = document.caretPositionFromPoint(event.clientX, event.clientY);
-        textNode = range.offsetNode;
-        offset = range.offset;
+        textNode = range ? range.offsetNode : null;
+        offset = range ? range.offset : null;
       } else if (document.caretRangeFromPoint) {
         range = document.caretRangeFromPoint(event.clientX, event.clientY);
-        textNode = range.startContainer;
-        offset = range.startOffset;
+        textNode = range ? range.startContainer : null;
+        offset = range ? range.startOffset : null;
       }
       if (range) {
         whitespaceBefore = range.startContainer.textContent.match(/^[\s\n]*/)[0];
@@ -221,7 +293,7 @@
       isOverTextNode = false;
       if (cursorStyle === 'auto' && elBelow.tagName === 'A') {
         cursorStyle = 'pointer';
-      } else if ((!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
+      } else if (range && (!whitespaceBefore.length || offset > whitespaceBefore.length) && offset < text.length) {
         if (cursorStyle === 'auto') {
           cursorStyle = 'text';
         }
