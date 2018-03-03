@@ -29,6 +29,19 @@
       const windowStyle = window.getComputedStyle(document.body);
       this.pointerEventsSupport = (windowStyle.pointerEvents && windowStyle.pointerEvents === 'auto');
 
+      // Some useful regexes.
+      this.regexOn = /^on/;
+      this.regexMouseEvents = /^(dbl)?click$|^mouse(move|down|up|over|out|enter|leave)$|^contextmenu$/;
+      this.regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/;
+      this.regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
+      // Whether to use event constructors.
+      this.useEventConstructors = true;
+      try {
+        const e = new MouseEvent('click');
+      } catch (e) {
+        this.useEventConstructors = false;
+      }
+
       // If mode is not provided, use PointerEvents, if it's supported.
       if (typeof mode === 'undefined') {
         this.mode = this.pointerEventsSupport ? 'PointerEvents' : 'EventForwarding';
@@ -54,9 +67,21 @@
         for (let nonblock of nonblocks) {
           const rect = nonblock.getBoundingClientRect();
           if (ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
-            nonblock.classList.add('nonblock-hover');
+            if (!nonblock.classList.contains('nonblock-hover')) {
+              nonblock.classList.add('nonblock-hover');
+              if (this.isSimulateMouse(nonblock) && ev.isTrusted) {
+                this.domEvent(nonblock, 'onmouseenter', ev, false);
+                this.domEvent(nonblock, 'onmouseover', ev, true);
+              }
+            } else if (this.isSimulateMouse(nonblock) && ev.isTrusted) {
+              this.domEvent(nonblock, 'onmousemove', ev, true);
+            }
           } else {
             if (nonblock.classList.contains('nonblock-hover')) {
+              if (this.isSimulateMouse(nonblock) && ev.isTrusted) {
+                this.domEvent(nonblock, 'onmouseout', ev, true);
+                this.domEvent(nonblock, 'onmouseleave', ev, false);
+              }
               nonblock.classList.remove('nonblock-hover');
             }
           }
@@ -115,18 +140,6 @@
       // These are used for selecting text under a nonblock element.
       this.isOverTextNode = false;
       this.selectingText = false;
-      // Some useful regexes.
-      this.regexOn = /^on/;
-      this.regexMouseEvents = /^(dbl)?click$|^mouse(move|down|up|over|out|enter|leave)$|^contextmenu$/;
-      this.regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/;
-      this.regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
-      // Whether to use event constructors.
-      this.useEventConstructors = true;
-      try {
-        const e = new MouseEvent('click');
-      } catch (e) {
-        this.useEventConstructors = false;
-      }
 
       this.onmouseenter = (ev) => {
         let nonblock;
@@ -447,6 +460,10 @@
 
     isFocusable(el) {
       return el.classList.contains('nonblock-allow-focus');
+    }
+
+    isSimulateMouse(el) {
+      return !el.classList.contains('nonblock-stop-mouse-simulation');
     }
 
     getCursor(el) {

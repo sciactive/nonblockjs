@@ -70,6 +70,19 @@
         var windowStyle = window.getComputedStyle(document.body);
         this.pointerEventsSupport = windowStyle.pointerEvents && windowStyle.pointerEvents === 'auto';
 
+        // Some useful regexes.
+        this.regexOn = /^on/;
+        this.regexMouseEvents = /^(dbl)?click$|^mouse(move|down|up|over|out|enter|leave)$|^contextmenu$/;
+        this.regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/;
+        this.regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
+        // Whether to use event constructors.
+        this.useEventConstructors = true;
+        try {
+          var e = new MouseEvent('click');
+        } catch (e) {
+          this.useEventConstructors = false;
+        }
+
         // If mode is not provided, use PointerEvents, if it's supported.
         if (typeof mode === 'undefined') {
           this.mode = this.pointerEventsSupport ? 'PointerEvents' : 'EventForwarding';
@@ -86,6 +99,8 @@
       _createClass(NonBlock, [{
         key: 'initPointerEvents',
         value: function initPointerEvents() {
+          var _this = this;
+
           // Using pointer-events, we can just detect whether an element is being
           // hovered over. No event forwarding necessary.
 
@@ -104,9 +119,21 @@
 
                 var rect = nonblock.getBoundingClientRect();
                 if (ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
-                  nonblock.classList.add('nonblock-hover');
+                  if (!nonblock.classList.contains('nonblock-hover')) {
+                    nonblock.classList.add('nonblock-hover');
+                    if (_this.isSimulateMouse(nonblock) && ev.isTrusted) {
+                      _this.domEvent(nonblock, 'onmouseenter', ev, false);
+                      _this.domEvent(nonblock, 'onmouseover', ev, true);
+                    }
+                  } else if (_this.isSimulateMouse(nonblock) && ev.isTrusted) {
+                    _this.domEvent(nonblock, 'onmousemove', ev, true);
+                  }
                 } else {
                   if (nonblock.classList.contains('nonblock-hover')) {
+                    if (_this.isSimulateMouse(nonblock) && ev.isTrusted) {
+                      _this.domEvent(nonblock, 'onmouseout', ev, true);
+                      _this.domEvent(nonblock, 'onmouseleave', ev, false);
+                    }
                     nonblock.classList.remove('nonblock-hover');
                   }
                 }
@@ -132,7 +159,7 @@
       }, {
         key: 'initEventForwarding',
         value: function initEventForwarding() {
-          var _this = this;
+          var _this2 = this;
 
           // No pointer-events means we have to fall back to using event forwarding.
 
@@ -144,110 +171,98 @@
           // These are used for selecting text under a nonblock element.
           this.isOverTextNode = false;
           this.selectingText = false;
-          // Some useful regexes.
-          this.regexOn = /^on/;
-          this.regexMouseEvents = /^(dbl)?click$|^mouse(move|down|up|over|out|enter|leave)$|^contextmenu$/;
-          this.regexUiEvents = /^(focus|blur|select|change|reset)$|^key(press|down|up)$/;
-          this.regexHtmlEvents = /^(scroll|resize|(un)?load|abort|error)$/;
-          // Whether to use event constructors.
-          this.useEventConstructors = true;
-          try {
-            var e = new MouseEvent('click');
-          } catch (e) {
-            this.useEventConstructors = false;
-          }
 
           this.onmouseenter = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.nonBlockLastElem = false;
-              if (!_this.isPropagating(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.nonBlockLastElem = false;
+              if (!_this2.isPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
           };
           this.onmouseleave = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.remCursor(nonblock);
-              _this.nonBlockLastElem = null;
-              _this.selectingText = false;
-              if (!_this.isPropagating(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.remCursor(nonblock);
+              _this2.nonBlockLastElem = null;
+              _this2.selectingText = false;
+              if (!_this2.isPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
           };
           this.onmouseover = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target)) && !_this.isPropagating(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target)) && !_this2.isPropagating(nonblock)) {
               ev.stopPropagation();
             }
           };
           this.onmouseout = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target)) && !_this.isPropagating(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target)) && !_this2.isPropagating(nonblock)) {
               ev.stopPropagation();
             }
           };
           this.onmousemove = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.nonblockPass(nonblock, ev, 'onmousemove');
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.nonblockPass(nonblock, ev, 'onmousemove');
               // If the user just clicks somewhere, we don't want to select text, so this
               // detects that the user moved their mouse.
-              if (_this.selectingText === null) {
+              if (_this2.selectingText === null) {
                 window.getSelection().removeAllRanges();
-                _this.selectingText = true;
-              } else if (_this.selectingText) {
+                _this2.selectingText = true;
+              } else if (_this2.selectingText) {
                 // Stop the default action, which would be selecting text.
                 ev.preventDefault();
               }
-              if (!_this.isPropagating(nonblock)) {
+              if (!_this2.isPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
           };
           this.onmousedown = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.nonblockPass(nonblock, ev, 'onmousedown');
-              _this.selectingText = null;
-              if (!_this.isFocusable(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.nonblockPass(nonblock, ev, 'onmousedown');
+              _this2.selectingText = null;
+              if (!_this2.isFocusable(nonblock)) {
                 // Stop the default action, which would focus the element.
                 ev.preventDefault();
               }
-              if (!_this.isPropagating(nonblock) || !_this.isActionPropagating(nonblock)) {
+              if (!_this2.isPropagating(nonblock) || !_this2.isActionPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
           };
           this.onmouseup = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.nonblockPass(nonblock, ev, 'onmouseup');
-              if (_this.selectingText === null) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.nonblockPass(nonblock, ev, 'onmouseup');
+              if (_this2.selectingText === null) {
                 window.getSelection().removeAllRanges();
               }
-              _this.selectingText = false;
-              if (!_this.isPropagating(nonblock) || !_this.isActionPropagating(nonblock)) {
+              _this2.selectingText = false;
+              if (!_this2.isPropagating(nonblock) || !_this2.isActionPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
           };
           this.onclick = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.nonblockPass(nonblock, ev, 'onclick');
-              if (!_this.isPropagating(nonblock) || !_this.isActionPropagating(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.nonblockPass(nonblock, ev, 'onclick');
+              if (!_this2.isPropagating(nonblock) || !_this2.isActionPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
           };
           this.ondblclick = function (ev) {
             var nonblock = void 0;
-            if (ev.isTrusted && (nonblock = _this.getNonBlocking(ev.target))) {
-              _this.nonblockPass(nonblock, ev, 'ondblclick');
-              if (!_this.isPropagating(nonblock) || !_this.isActionPropagating(nonblock)) {
+            if (ev.isTrusted && (nonblock = _this2.getNonBlocking(ev.target))) {
+              _this2.nonblockPass(nonblock, ev, 'ondblclick');
+              if (!_this2.isPropagating(nonblock) || !_this2.isActionPropagating(nonblock)) {
                 ev.stopPropagation();
               }
             }
@@ -486,6 +501,11 @@
         key: 'isFocusable',
         value: function isFocusable(el) {
           return el.classList.contains('nonblock-allow-focus');
+        }
+      }, {
+        key: 'isSimulateMouse',
+        value: function isSimulateMouse(el) {
+          return !el.classList.contains('nonblock-stop-mouse-simulation');
         }
       }, {
         key: 'getCursor',

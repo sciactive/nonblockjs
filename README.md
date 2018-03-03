@@ -48,6 +48,10 @@ window.NonBlockJs.nonBlock = new window.NonBlockJs.NonBlock(document.body, "Even
 
 Nonblocking elements are given the `pointer-events: none;` style, so that the cursor does not interact with them. NonBlock.js will listen to `mousemove` events on the document body and will detect when the cursor passes over a nonblocking element. It applies the `nonblock-hover` class to fade the element.
 
+#### Mouse Events in PointerEvents Mode
+
+Normally, an element with the `pointer-events: none;` style will not receive any events related to mouse movement/interaction. In order to let you listen for these events, NonBlock.js will fire simulated `mouseover`, `mouseenter`, `mousemove`, `mouseout`, and `mouseleave` events on the nonblocking element. You can add the class `nonblock-stop-mouse-simulation` to prevent this behavior. (It is worth noting that only the element with `nonblock` receives these events. None of its children receive any events.)
+
 ### EventForwarding Mode
 
 Nonblocking elements have a `:hover` pseudoclass applied to them that will fade them. NonBlock.js will listen for mouse events on document.body and detect when a mouse event is fired on a nonblocking element. It will detect what element is below the nonblocking element and forward the event to that element. It will detect the cursor that applies to that element and apply the same cursor to the nonblocking element. It also watches mousedown and mousemove and attempts to allow the user to select text.

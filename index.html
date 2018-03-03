@@ -50,7 +50,11 @@
       height: 100px;
       width: 120px;
     }
-    .intheway.second, .intheway.third, .intheway.fourth {
+    .intheway.second,
+    .intheway.event-forwarding-first,
+    .intheway.event-forwarding-second,
+    .intheway.pointer-events-first,
+    .intheway.pointer-events-second {
       position: absolute;
       top: 4px;
       bottom: 4px;
@@ -60,7 +64,7 @@
       width: auto;
     }
   </style>
-  <script type="text/javascript" src="NonBlock.es5.js"></script>
+  <script type="text/javascript" src="NonBlock.js"></script>
 </head>
 <body>
   <h1>NonBlock.js</h1>
@@ -84,7 +88,7 @@
           you while the speaker in my straw hat blasts disco music.
         </div>
         <div class="nonblock intheway first">
-          There&apos;s a link under me. I am going to stay in the way of that
+          There's a link under me. I am going to stay in the way of that
           link.
         </div>
       </div>
@@ -99,9 +103,70 @@
       <div class="container second">
         This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
         <div class="nonblock intheway second">
-          There&apos;s a button under me. I am going to stay in the way of that
+          There's a button under me. I am going to stay in the way of that
           button.
         </div>
+      </div>
+
+      <!-- These demos only show up in PointerEvents mode -->
+      <div id="showOnPointerEvents" style="display: none;">
+        <hr />
+        <div>
+          These demos show how event simulation in "PointerEvents" mode
+          works.
+        </div>
+        <div>
+          An event listener is placed on the yellow box.
+        </div>
+
+        <!-- First pointer events demo -->
+        <h4>
+          class="nonblock"
+        </h4>
+        <div class="container pointer-events-first">
+          This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
+          <div class="nonblock intheway pointer-events-first">
+            There's a button under me. I am going to stay in the way of
+            that button.
+          </div>
+        </div>
+        <div style="display: inline-block; font-family: monospace; width: auto;">
+          Event log:
+          <div id="event-pointer-events-first" style="max-height: 250px; overflow: auto;"></div>
+        </div>
+
+        <!-- Second pointer events demo -->
+        <h4>
+          class="nonblock nonblock-stop-mouse-simulation"
+        </h4>
+        <div class="container pointer-events-second">
+          This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
+          <div class="nonblock nonblock-stop-mouse-simulation intheway pointer-events-second">
+            There's a button under me. I am going to stay in the way of
+            that button.
+          </div>
+        </div>
+        <div style="display: inline-block; font-family: monospace; width: auto;">
+          Event log:
+          <div id="event-pointer-events-second" style="max-height: 250px; overflow: auto;"></div>
+          (seeing no events in this demo is normal.)
+        </div>
+
+        <!-- Script to listen for events on the nonblocks for the pointer events demos -->
+        <script type="text/javascript">
+          function listenerDemo(demo, eventType) {
+            document.querySelector('.nonblock.'+demo).addEventListener(eventType, function(event){
+              var output = document.getElementById('event-'+demo);
+              output.innerHTML += '<br />'+eventType+'<br />Target: '+event.target.tagName+' class="'+event.target.className+'"<br />';
+              output.scrollTop = output.scrollHeight;
+            });
+          }
+          var events = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout', 'mousemove'];
+          for (var i in events) {
+            listenerDemo('pointer-events-first', events[i]);
+            listenerDemo('pointer-events-second', events[i]);
+          }
+        </script>
       </div>
 
       <!-- These demos only show up in EventForwarding mode -->
@@ -119,50 +184,50 @@
         <h4>
           class="nonblock"
         </h4>
-        <div class="container third">
+        <div class="container event-forwarding-first">
           This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
-          <div class="nonblock intheway third">
-            There&apos;s a button under me. I am going to stay in the way of
+          <div class="nonblock intheway event-forwarding-first">
+            There's a button under me. I am going to stay in the way of
             that button.
           </div>
         </div>
         <div style="display: inline-block; font-family: monospace; width: auto;">
           Event log:
-          <div id="event-third" style="max-height: 250px; overflow: auto;"></div>
+          <div id="event-event-forwarding-first" style="max-height: 250px; overflow: auto;"></div>
         </div>
 
         <!-- Second event propagation demo -->
         <h4>
           class="nonblock nonblock-stop-propagation"
         </h4>
-        <div class="container fourth">
+        <div class="container event-forwarding-second">
           This is a <button type="button" onclick="alert('You clicked the button.')">button</button>.
-          <div class="nonblock nonblock-stop-propagation intheway fourth">
-            There&apos;s a button under me. I am going to stay in the way of
+          <div class="nonblock nonblock-stop-propagation intheway event-forwarding-second">
+            There's a button under me. I am going to stay in the way of
             that button.
           </div>
         </div>
         <div style="display: inline-block; font-family: monospace; width: auto;">
           Event log:
-          <div id="event-fourth" style="max-height: 250px; overflow: auto;"></div>
+          <div id="event-event-forwarding-second" style="max-height: 250px; overflow: auto;"></div>
         </div>
-      </div>
 
-      <!-- Script to listen for events on the containers for the event propagation demos -->
-      <script type="text/javascript">
-        function listenerDemo(demo, eventType) {
-          document.querySelector('.container.'+demo).addEventListener(eventType, function(event){
-            var output = document.getElementById('event-'+demo);
-            output.innerHTML += '<br />'+eventType+'<br />Target: '+event.target.tagName+' class="'+event.target.className+'"<br />';
-            output.scrollTop = output.scrollHeight;
-          });
-        }
-        var events = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'click', 'dblclick'];
-        for (var i in events) {
-          listenerDemo('third', events[i]);
-          listenerDemo('fourth', events[i]);
-        }
-      </script>
+        <!-- Script to listen for events on the containers for the event propagation demos -->
+        <script type="text/javascript">
+          function listenerDemo(demo, eventType) {
+            document.querySelector('.container.'+demo).addEventListener(eventType, function(event){
+              var output = document.getElementById('event-'+demo);
+              output.innerHTML += '<br />'+eventType+'<br />Target: '+event.target.tagName+' class="'+event.target.className+'"<br />';
+              output.scrollTop = output.scrollHeight;
+            });
+          }
+          var events = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'click', 'dblclick'];
+          for (var i in events) {
+            listenerDemo('event-forwarding-first', events[i]);
+            listenerDemo('event-forwarding-second', events[i]);
+          }
+        </script>
+      </div>
     </section>
 
 
@@ -179,7 +244,7 @@
         <button type="button" onclick="forceMode('EventForwarding')">EventForwarding</button>
       </div>
 
-      <!-- Script to change the mode and update the display/toggle the event propagation demos -->
+      <!-- Script to change the mode and update the display/toggle the mode specific demos -->
       <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', detectMode);
 
@@ -189,6 +254,9 @@
 
           document.getElementById('showOnEventForwarding').style.display =
             NonBlockJs.nonBlock.mode === 'EventForwarding' ? 'block' : 'none';
+
+          document.getElementById('showOnPointerEvents').style.display =
+            NonBlockJs.nonBlock.mode === 'PointerEvents' ? 'block' : 'none';
         }
 
         function forceMode(mode) {
