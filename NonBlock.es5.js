@@ -525,7 +525,10 @@
       }, {
         key: 'remCursor',
         value: function remCursor(el) {
-          [].concat(_toConsumableArray(el.classList.values())).forEach(function (className) {
+          var values = Object.keys(el.classList).map(function (e) {
+            return el.classList[e];
+          });
+          [].concat(_toConsumableArray(values)).forEach(function (className) {
             if (className.indexOf('nonblock-cursor-') === 0) {
               el.classList.remove(className);
             }
