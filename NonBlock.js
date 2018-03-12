@@ -480,7 +480,8 @@
     }
 
     remCursor(el) {
-      [...el.classList.values()].forEach((className) => {
+      const values = Object.keys(el.classList).map(e => el.classList[e]);
+      [...values].forEach((className) => {
         if (className.indexOf('nonblock-cursor-') === 0) {
           el.classList.remove(className);
         }
