@@ -17,13 +17,19 @@ npm install --save nonblockjs
 ```
 
 ```html
-<script src="node_modules/nonblockjs/NonBlock.es5.js" type="text/javascript"></script>
+<script
+  src="node_modules/nonblockjs/NonBlock.es5.js"
+  type="text/javascript"
+></script>
 ```
 
 ### Or use jsDelivr:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.es5.js" type="text/javascript"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/nonblockjs@1/NonBlock.es5.js"
+  type="text/javascript"
+></script>
 ```
 
 ## Usage
@@ -34,14 +40,17 @@ Add the class `nonblock` to any element you want to make nonblocking.
 
 There are two modes that NonBlock.js can use, "PointerEvents" and "EventForwarding".
 
-* "PointerEvents" is used for newer browsers, and allows *all* features of below elements to work.
-* "EventForwarding" is used for browsers that don't support the CSS "pointer-events" property (IE9 and IE10), and allows *most* features of below elements to work.
+- "PointerEvents" is used for newer browsers, and allows _all_ features of below elements to work.
+- "EventForwarding" is used for browsers that don't support the CSS "pointer-events" property (IE9 and IE10), and allows _most_ features of below elements to work.
 
 NonBlock.js detects whether the browser supports "pointer-events" and selects the mode automatically. If you want to force NonBlock.js into a specific mode, like "EventForwarding", you can do this:
 
 ```js
 window.NonBlockJs.nonBlock.destroy();
-window.NonBlockJs.nonBlock = new window.NonBlockJs.NonBlock(document.body, "EventForwarding");
+window.NonBlockJs.nonBlock = new window.NonBlockJs.NonBlock(
+  document.body,
+  "EventForwarding",
+);
 ```
 
 ### PointerEvents Mode
@@ -56,7 +65,7 @@ Normally, an element with the `pointer-events: none;` style will not receive any
 
 Nonblocking elements have a `:hover` pseudoclass applied to them that will fade them. NonBlock.js will listen for mouse events on document.body and detect when a mouse event is fired on a nonblocking element. It will detect what element is below the nonblocking element and forward the event to that element. It will detect the cursor that applies to that element and apply the same cursor to the nonblocking element. It also watches mousedown and mousemove and attempts to allow the user to select text.
 
-All of this means that *most* features of the below elements will work in EventForwarding mode, with the notable exception of `:hover` styles, since those cannot be programmatically activated.
+All of this means that _most_ features of the below elements will work in EventForwarding mode, with the notable exception of `:hover` styles, since those cannot be programmatically activated.
 
 #### Event Propagation and Default Actions in EventForwarding Mode
 
@@ -71,3 +80,25 @@ Add the class `nonblock-allow-action-propagation` if you want NonBlock.js to all
 ## Author
 
 NonBlock.js was written by Hunter Perrin as part of [PNotify](https://github.com/sciactive/pnotify).
+
+# Human Authorship
+
+This project adheres to the [SciActive Human Contribution Policy](HUMAN-CONTRIBUTION-POLICY.md).
+
+[![Seal of Human Authorship](https://sciactive.com/wp-content/uploads/2026/03/Seal-of-Human-Authorship-300.png)](https://sciactive.com/human-contribution-policy/)
+
+# License
+
+Copyright 2026 SciActive Inc
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
